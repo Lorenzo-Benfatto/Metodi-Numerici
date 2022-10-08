@@ -1,3 +1,7 @@
+# A program that calculates the exponential constant for the C(k) via a best fit.
+# It then computes a better estimate for standard deviation of the gaussian distribution
+# simulated with the Metropolis algorithm.
+
 import pylab
 import numpy as np
 from scipy.optimize import curve_fit
