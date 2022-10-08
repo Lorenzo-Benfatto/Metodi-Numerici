@@ -1,4 +1,6 @@
-// sto coso usa il ran2 e funge ma il seed è dato col culo
+// A program that simulates a gaussian distribution via a Metropolis Monte-Carlo algorithm.
+// It differs from the metrogauss.c program because it employs the standard ran2() random number generator
+// (from Numerical Recipes in C)
 
 #define IM1 2147483563
 #define IM2 2147483399
