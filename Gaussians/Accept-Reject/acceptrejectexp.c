@@ -1,3 +1,6 @@
+// A program that simulates a Gaussian distribution via an Accept-Reject algorithm. 
+// It's supposed to be ran after having created the file "gaussian.txt" using the campionamentoexp.c program.
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
