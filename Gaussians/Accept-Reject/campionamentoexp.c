@@ -1,3 +1,6 @@
+// A program that simulates a bunch of points distributing according to an exponential distribution.
+// The data obtained is then supposed to be fed to the acceptrejectexp.c program
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
