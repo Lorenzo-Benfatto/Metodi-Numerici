@@ -1,3 +1,5 @@
+// A program that simulates a gaussian distribution via a Box-Muller algorithm.
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
