@@ -1,3 +1,5 @@
+// A program that calculates the autocorrelation function for various values of the sampling.
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<time.h>
