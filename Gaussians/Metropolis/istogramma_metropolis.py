@@ -1,3 +1,6 @@
+# A program that shows the gaussian distribution simulated via the metrogauss.c program.
+# It also prints out the acceptance.
+
 import pylab
 import numpy as np
 from datetime import datetime
