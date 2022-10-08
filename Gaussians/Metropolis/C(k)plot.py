@@ -1,3 +1,5 @@
+# A program to plot C(k) 
+
 import pylab
 import numpy as np
 from datetime import datetime
