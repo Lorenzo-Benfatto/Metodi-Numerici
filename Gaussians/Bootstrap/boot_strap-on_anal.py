@@ -13,9 +13,9 @@ import winsound
 frequency = 3500  # Set Frequency To 2500 Hertz
 duration = 2000  # Set Duration To 1000 ms == 1 second
 
-M=50
+M=50 #Numero di resampling effettuati nel bootstrap
 
-x=np.loadtxt('resample.txt', unpack=False)
+x=np.loadtxt('resample.txt', unpack=False)  #Funziona male col binned bootstrap (cumulante sbagliato)
 
 a=np.mean(x,axis=1)
 b=np.mean(a)
