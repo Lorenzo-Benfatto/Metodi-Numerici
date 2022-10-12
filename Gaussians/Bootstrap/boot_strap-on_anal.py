@@ -20,6 +20,8 @@ x=np.loadtxt('resample.txt', unpack=False)  #Funziona male col binned bootstrap 
 a=np.mean(x,axis=1)
 b=np.mean(a)
 
+x=x-b #bisogna shiftare la x del valore della media per avere il cumulante di 3 (valore per una gaussiana centrata in 0)
+
 x4=np.mean(x**4,axis=1)
 x2=np.mean(x**2,axis=1)
 binderino=x4/(x2**2)
