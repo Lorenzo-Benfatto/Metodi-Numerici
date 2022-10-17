@@ -2,269 +2,227 @@
 #include<stdlib.h>
 #include<time.h>
 #include<math.h>
-#include"ran2.h"
 
-/* Programma per la simulazione del modello di ising bidimensionale con possibilita` di inserire un campo magnetico esterno */
+//definisco il tipo lista che contiene elemento numerico float più puntatore a blocchetto successivo 
+typedef struct elem {
+	float val;
+	struct elem *next;
+}list;
 
-
-/* ------------------------------------- DICHIARAZIONE DELLE VARIABILI GLOBALI ------------------------------------------- */
-#define N 50
-int nlatt = N, nvol = N*N; //dimensioni del reticolo (lunghezza del lato e volume)
-int field[N][N]; //campo
-float beta = 0.44, extfield; //beta è il valore della riga considerata dell'array dei beta (beta_array)
-float xmagn, xene;
-int M = 10000; //per il generatore casuale tra 0 e 1
-int npp[N], nmm[N]; //array per definire le posizioni dei primi vicini del lattice
-long int seed = 674;
+/*Da qui una serie di funzioni utili per lavorare con le liste.
+Ognuna di esse, eccetto le ultime quattro, restituisce un putatore di tipo lista, e scorre gli elementi della lista stessa
+attraverso un punttatore di tipo lista che è chiamato tmp sempre*/
 
 
-// ! RICORDARE DI CAMBIARE ANCHE LA LUNGHEZZA DELL'ARRAY DEI BETA, NEL MAIN !
-
-
-/* ------------------------------------- INIZIO SUBROUTINES ------------------------------------------- */
-
-
-/* per ogni coordinata definisco il passo in avanti o indietro con le opportune condizioni al bordo*/
-void geometry(){
-    
-    for(int i=0; i<nlatt; i++){
-        npp[i] = i + 1;
-        nmm[i] = i - 1;
-    }
-    
-    npp[nlatt-1] = 0; //Condizioni al
-    nmm[0] = nlatt-1; //bordo periodiche
-    
-    return;
-        
+/*========================= FUNZIONI PER AGGIUNGERE ELEMENTI ALLA LISTA =================================*/
+//funzione per aggiungere un elemento in testa alla lista
+list *agg_testa(float n, list *p){ // argomenti sono il valore dell'elemento da aggiungere e il puntatore alla testa lista
+	if(p != NULL){
+		list *tmp = p; //salvo in tmp l'indirizzo del secondo elem della lista
+		p=(list*)malloc(sizeof(list)); // alloco nuovo spazio da aggiungere alla lista, costituirà il nuovo primo elem
+		p->val=n; 						//assegno primp elem
+		p->next=tmp;				//così lo colloco in testa, dato che punta al secondo elemento
+	}
+	else{ //se la lista è vuota aggiungo semplicemente un elemento
+		p=(list*)malloc(sizeof(list));
+		p->val=n;
+		p->next=NULL;
+	}
+	return p;
 }
 
-/* -------------------------*/
+/*funzione per aggiungere un elemento in coda alla lista. 
+Sfrutta la funzione scritta sopra per aggiungere in testa, ma lo fa al puntatore next dell'ultimo elem della lista*/
+list *agg_coda(float n, list *p){ // argomenti sono il valore dell'elemento da aggiungere e il puntatore alla testa lista
+	if(p != NULL){
+		list *tmp = p;
+		while(tmp->next!=NULL){ //questo ciclo mi serve per arrivare in fondo alla lista
+			tmp=tmp->next;
+		}
+		tmp->next=agg_testa(n, NULL);
+	}
+	else{ // se la lista è vuota aggiungo semplicemente un elemento
+		p=agg_testa(n, p);
+	}
+	return p;
+}
 
-/* Assegno la configurazione di partenza della catena di Markov */
-void initialize_lattice(int iflag){
-    
-    float x;
-    
-    /* PARTENZA A FREDDO (tutti gli spin a 1, o -1, come se fosse T = 0) */
-    if(iflag == 0){
-        for(int i = 0; i<nlatt; i++){
-            for(int j = 0; j<nlatt; j++){
-                
-                field[i][j] = 1;
-            }
-        }
-    }
-    /* PARTENZA A CALDO (spin random, come se fosse T = infinito) */
-    if(iflag == 1){
-        for(int i = 0; i<nlatt; i++){
-            for(int j = 0; j<nlatt; j++){
-                
-                float x;
-                //seed = i;
-                x = ran2(&seed);
-                field[i][j] = 1;
-                if(x<0.5) field[i][j] = -1;
-            }
-        }
-    }
-    
-    // AGGIUNGERE IF PER RIPARTIRE DALLA CONFIGURAZIONE PRECEDENTE
-    
-    
-    return;
+/*funzione per aggiungere un elemento in una posizione specifica della lista.
+Anche'essa sfrutta la agg_testa, ma prima, come in agg_coda, deve puntare all'elemento successivo al punto in cui si vuole 
+aggiungere*/
+list* agg_posizione(float n, int posizione, list* testa){
+
+	if(posizione == 0 || testa == NULL){
+		testa = agg_testa(n, testa);
+	}
+	else if(posizione > 0){
+		int i=1;
+		list* tmp = testa;
+		while(i < posizione && tmp->next != NULL){
+			tmp = tmp->next;
+			i++;
+		}
+		tmp->next= agg_testa(n, tmp->next);
+	}
+	return testa;
 }
 
 
-/* -------------------------*/
+/*=================================== FUNZIONI PER RIMUOVERE ELEMENTI DALLA LISTA ==============================*/
 
-/* Calcolo magnetizzazione media del reticolo */
-void magnetization(float xmagn){
-    
-    xmagn = 0; // inizializzazioine xmagn
-    
-    for(int i = 0; i<nlatt; i++){            // faccio il loop su
-        for(int j = 0; j<nlatt; j++){        // su tutto il reticolo
-            
-            xmagn = xmagn + field[i][j];     // e sommo su tutti i valori del campo
-        }
-    }
-    xmagn = xmagn/nvol;                      // normalizzo dividendo per il volume
-    return;
+//funzione per rimuovere il primo elemento della lista
+list* rm_testa(list* testa){
+	if(testa != NULL){
+		list* daEliminare = testa; //salvo primo elem in un puntatore ausiliario, da freeare successivamente
+		testa = testa->next; // la nuova testa di lista sarà il secondo blocco della vecchia
+		free(daEliminare);
+	}
+
+	return testa;
 }
 
-/* -------------------------*/
+//funzione per rimuovere l'ultimo elemento della lista
+list* rm_coda(list* testa){
+	if(testa != NULL){
+		if(testa->next != NULL){
 
-/* Energia media (= 0 per configurazione ordinata e campo esterno 0) */
-void energy(float xene){
-    
-    int ip, im, jp, jm;
-    float force;
-    
-    xene = 0;                             // inizializzazioine xene
-    
-    for(int i = 0; i<nlatt; i++){
-        for(int j = 0; j<nlatt; j++){
-            
-            ip = npp[i];        // calcolo coordinate
-            im = nmm[i];        // dei primi vicini
-            jp = npp[j];        // del sito
-            jm = nmm[j];
-            
-            force = field[i][jp] + field[i][jm] + field[ip][j] + field[im][j]; // somma dei 4 primi vicini
-            xene = xene - 0.5*force*field[i][j]; // 1/2 per il conteggio giusto
-            xene = xene - extfield*field[i][j]; // contributo campo esterno
-        }
-    }
-    
-    xene = xene/nvol;       // normalizzo dividendo per il volume
-    return;
-}
+			list* attuale = testa;					//così riesco a scorrere la lista fino al fondo
+			list* daEliminare = testa->next;
 
-/* -------------------------*/
+			while(daEliminare->next != NULL){
+				attuale = daEliminare;
+				daEliminare = daEliminare ->next; // alla fine l'ultimo elem sta in daEliminare, mentre il penultimo in attuale
+			}
+	    	attuale->next = rm_testa(daEliminare); //così rimuovo l'ultimo elem considerando una mini lista fatta da 
+	    	//due elementi: attuale che punta a daEliminare
+		}
+		else{
+			testa = rm_testa(testa);
+		}
+	}
 
-/* faccio aggiornamenti locali delle variabili di spin con metropolis, la variabile di spin di prova e` sempre quella opposta a quella attuale */
-void update_metropolis(float beta){
-    
-    int i, j, ip, im, jp, jm;
-    float force, phi, p_rat, x, a, b, acc = 0;
-    
-    for(int ivol=0; ivol<nvol; ivol++){     // loop su tutti i siti del reticolo
-        
-        /* sclego a caso un sito del reticolo */
-        
-        //seed = ivol;
-        
-        i = ran2(&seed)*nlatt;                       // scelgo a caso un sito del reticolo
-        
-    
-        j = ran2(&seed)*nlatt;
-        
-        /*
-        i = rand()%nlatt;                   // genera direttamente un numero intero tra 0 e nlatt
-        j = rand()%nlatt;
-        */
-        ip = npp[i];                        // calcolo le coordinate dei quattro primi vicini
-        im = nmm[i];                        // del sito che ho scelto
-        jp = npp[j];
-        jm = nmm[j];
-        
-        force = field[i][jp] + field[i][jm] + field[ip][j] + field[im][j];
-        force = beta*(force+extfield);
-        
-        phi = field[i][j];
-        
-        p_rat = exp(-2*phi*force);
-        
-    
-        x = ran2(&seed);
-
-        
-        
-        if(x<p_rat) {
-            field[i][j] = - phi;
-        }
-        
-    }
-
-    return;
+	return testa;
 }
 
 
-    /* ------------------------------------- FINE SUBROUTINES ------------------------------------------- */
-
-    /* ------------------------------------- INIZIO MAIN ------------------------------------------- */
-
-int main(void){
-    
-    FILE *f, *m, *e, *l;
-    int x, y, z; //variabili per leggere il file
-    int iflag, measures, i_decorrel; //nomi dei parametri della simulazione
-                                    //(iflag per partenza caldo(1), freddo(0),...| measures = n° misure|
-                                    // i_decorrel = numero di passi della catena Markov tra una misura e l'altra)
-    int i=0; //variabile per scorrere while
-    float extfield; //nomi dei parametri della simulazione (beta = 1/kT | extfield = campo esterno)
-    
-    
-    
-    
-    /* apertura dei file di input e di output */
-    f=fopen("input.txt","r");
-    if(f==NULL){
-     perror("File non correttamente aperto");
-     exit(1);
-    }
-    
-    m=fopen("data_mag.txt","w");
-    if(m==NULL){
-     perror("File non correttamente aperto");
-     exit(2);
-    }
-    e=fopen("data_ene.txt","w");
-    if(e==NULL){
-     perror("File non correttamente aperto");
-     exit(3);
-    }
-    
-    /* lettura dei parametri della simulazione */
-    x = fscanf(f, "%d  %d  %d  %f", &iflag, &measures, &i_decorrel, &extfield);
-   
-    
-    /* OPERAZIONI PRELIMINARI */
-    geometry(); //inizializza condizioni al bordo
-    initialize_lattice(iflag); //inizializza configurazione iniziale
-    
+//funzione per rimuovere un elemneto in posizione specifica, che gli si passa come parametro della funz
+//Sfrutta sempre la rm_testa, portandosi a puntare all'elem immediatamente precedente a quello da eliminare
+list* rm_posizione(int posizione, list* testa){
 
 
-    for(int iter=0; iter<measures; iter++){
-        
-        /* AGGIORNAMENTO CONFIGURAZIONE: i_decorrel spazza tutto il reticolo con l'algoritmo scelto */
-        for(int idec=0; idec<i_decorrel; idec++){
-            update_metropolis(beta);
-        }
-        
-        /* MISURA DELLE VARIABILI FISICHE */
-        magnetization(xmagn);
-        energy(xene);
-        
-        /* SCRIVO LE MISURE SU FILE PER POI EFFETTUARE L'ANALISI */
-        fprintf(e, "%f ", xene);
-        fprintf(m, "%f ", xmagn);
-    }
+	if(posizione == 0 || testa -> next == NULL){
+		testa = rm_testa(testa);
+	}
+	else if(posizione > 0){
+		int i=1;
 
-    fprintf(e, "\n");
-    fprintf(m, "\n");
+		list* attuale = testa;
+		list* daEliminare = testa ->next;
 
-    /* --------------------------- TERMINE SIMULAZIONE MONTECARLO --------------------------- */
-    /* SALVO CONFIGURAZIONE PER POTER EVENTUALMENTE RIPARTIRE */
+		while(i < posizione && daEliminare->next!= NULL){
+                        attuale = daEliminare;
+			daEliminare = daEliminare ->next;
+			i++;
+		}
+		attuale ->next= rm_testa( daEliminare ->next);
 
+	}
+	return testa;
+}
 
+/*========================================== FUNZIONI CHE NON RESTITUISCONO PUNTATORE A LISTA ==============*/
 
-
-    l=fopen("beta1.txt","w");
-
-    if(l==NULL){
-     perror("File non correttamente aperto");
-     exit(5);
-    }
-    for(int j=0; j<nlatt; j++){
-        for(int k=0; k<nlatt; k++){
-            fprintf(l, "%d ", field[j][k]);
-            }
-        fprintf(l,"\n");
-        }
-    fclose(l);
-
-    /* --------------- FINE DEL SALVATAGGIO DELLA CONFIGURAZIOINE ATTUALE --------------- */
-
-
-        
-    
-    fclose(m);
-    fclose(e);
-    fclose(f);
-	
-	return 0;
+//stampa la lista su terminale
+//Non uso un puntatore ausiliario per scorrere la lista, poiché non mi serve tenermi salvato l'indirizzo della testa
+void print_lista(list * testa){
+	if(testa != NULL){
+		printf("TESTA -> ");
+		while(testa != NULL){
+			printf("%f -> ",testa->val);
+			testa = testa->next;
+		}
+	    printf("NULL \n");
+	}
+	else {
+		printf("LISTA VUOTA \n");
+	}
 }
 
 
+//funzione per stampare la lista su file
+//presuppone che il file sia già stato aperto nel main in cui viene chiamata
+//Non uso un puntatore ausiliario per scorrere la lista, poiché non mi serve tenermi salvato l'indirizzo della testa
+void print_su_file(FILE *f, list * testa){ // come argomento ha anche il puntatore al file su cui stampare
+	if(testa != NULL){
+		while(testa != NULL){
+			fprintf(f, "%f -> ",testa->val);
+			testa = testa->next;
+		}
+	}
+}
+
+
+//cerca un elemento specifico, utile ad esempio per le rm_posizione o agg_posizione
+// Non uso un puntatore ausiliario per scorrere la lista, tanto ritorna un intero
+int cerca(float n,list* testa){
+	int posizione = -1;
+	int trovato = 0;
+	int i=0;
+	while(testa != NULL && trovato == 0){
+		if(testa->val== n){ //se lo trovo subito ho fatto
+			posizione = i;
+			trovato = 1;
+		}
+		i++;
+		testa = testa ->next;
+	}
+	return posizione;
+}
+
+
+//funzione per contare il numero di elementi della lista. Anche qui scorro direttamente con testa
+int count(list* testa){
+	int i=0;
+	while(testa != NULL){
+		i++;
+		testa = testa -> next;
+	}
+	return i;
+}
+
+
+
+//funzione per aggiungere alla lista elementi letti da terminale e li aggiunge in coda. La funzione si blocca non appena 
+//verrà digitato il valore "0" che non potrà quindi essere contenuto nella lista. Modificare a piacimento in caso di necessità
+list *scan_term(list *d){
+	float elem;
+	int control=1;
+	while (control!=0){
+		printf("Digitare valore:");
+		scanf("%f", &elem);
+		if (elem==0) {
+			control=0;
+		}
+		else{
+			d=agg_coda(elem, d);			
+			print_lista(d);
+		}
+	}
+	return d;
+}	
+
+/*funzione per aggiungere alla lista elementi letti da file (che contenga
+ una sola colonna) e li aggiunge in coda. Il file dovrà esser già stato aperto nel main 
+ in cui viene chiamata tale funzione*/
+
+list *scan_file(FILE *f,list *d){
+	float elem;
+	int x;
+	x=fscanf(f, "%f", &elem);
+	while (x!=EOF){
+			d=agg_coda(elem, d);
+			x=fscanf(f, "%f ", &elem);
+		}
+//	print_lista(d);
+	return d;
+}	
