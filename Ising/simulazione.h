@@ -211,8 +211,8 @@ void simulazione(float beta){
         }
         
         /* MISURA DELLE VARIABILI FISICHE */
-        m_magn = m_magn + magnetization(xmagn);
-        m_ene = m_ene + energy(xene);
+        m_magn = m_magn + abs(magnetization(xmagn));
+        m_ene = m_ene + abs(energy(xene));
         
     }
     
