@@ -16,7 +16,7 @@ float xmagn, xene;
 int M = 10000; //per il generatore casuale tra 0 e 1
 int npp[N], nmm[N]; //array per definire le posizioni dei primi vicini del lattice
 long int seed = 674;
-
+float medie[2]={0,0};
 
 // ! RICORDARE DI CAMBIARE ANCHE LA LUNGHEZZA DELL'ARRAY DEI BETA, NEL MAIN !
 
@@ -79,7 +79,7 @@ void initialize_lattice(int iflag){
 /* -------------------------*/
 
 /* Calcolo magnetizzazione media del reticolo */
-void magnetization(float xmagn){
+float magnetization(float xmagn){
     
     xmagn = 0; // inizializzazioine xmagn
     
@@ -90,13 +90,13 @@ void magnetization(float xmagn){
         }
     }
     xmagn = xmagn/nvol;                      // normalizzo dividendo per il volume
-    return;
+    return xmagn;
 }
 
 /* -------------------------*/
 
 /* Energia media (= 0 per configurazione ordinata e campo esterno 0) */
-void energy(float xene){
+float energy(float xene){
     
     int ip, im, jp, jm;
     float force;
@@ -118,7 +118,7 @@ void energy(float xene){
     }
     
     xene = xene/nvol;       // normalizzo dividendo per il volume
-    return;
+    return xene;
 }
 
 /* -------------------------*/
@@ -175,7 +175,7 @@ void update_metropolis(float beta){
 
     /* ------------------------------------- INIZIO MAIN ------------------------------------------- */
 
-float * simulazione(float beta){
+void simulazione(float beta){
     
     FILE *f, *l;
     int x, y, z; //variabili per leggere il file
@@ -184,7 +184,7 @@ float * simulazione(float beta){
                                     // i_decorrel = numero di passi della catena Markov tra una misura e l'altra)
     int i=0; //variabile per scorrere while
     float extfield; //nomi dei parametri della simulazione (beta = 1/kT | extfield = campo esterno)
-    float medie[2], m_magn = 0, m_ene = 0;
+    float m_magn = 0, m_ene = 0;
     
     /* apertura dei file di input e di output */
     f=fopen("input.txt","r");
@@ -211,14 +211,16 @@ float * simulazione(float beta){
         }
         
         /* MISURA DELLE VARIABILI FISICHE */
-        m_mag = m_mag + magnetization(xmagn);
+        m_magn = m_magn + magnetization(xmagn);
         m_ene = m_ene + energy(xene);
         
     }
     
-    m_mag = m_mag/measures;
+    m_magn = m_magn/measures;
     m_ene = m_ene/measures;
-    medie = {m_mag, m_ene};
+    medie[0]=m_magn;
+    medie[1]=m_ene;
+  //  medie = {m_magn, m_ene};
 
     /* --------------------------- TERMINE SIMULAZIONE MONTECARLO --------------------------- */
     /* --------------- SALVO CONFIGURAZIONE PER POTER EVENTUALMENTE RIPARTIRE -------------
@@ -244,7 +246,27 @@ float * simulazione(float beta){
 
     fclose(f);
 	
-	return medie;
+	return;
+}
+/*
+void print(FILE f, int L){
+    for(int i=0; i<L; i++ ){
+        char filename[10];
+        sprintf(filename, "file%d.txt", i); //it modifies each time the name of the file to be created
+        f[i]=fopen(filename, "w");
+        if(f[i]==NULL){ //check if the file is opened correctly
+            perror("File non correttamente aperto");
+            exit(i);
+            }
+            for(int j=0; j<nlatt; j++){
+                 for(int k=0; k<nlatt; k++){
+                  fprintf(f[i], "%d ", field[j][k]);
+                     }
+             fprintf(f[i],"\n");
+        }
+        fclose(f[i]);   
+    }
+    return;
 }
 
-
+*/
