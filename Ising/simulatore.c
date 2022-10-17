@@ -26,7 +26,7 @@ int main(void){
 		simulazione(b->val);
 		fprintf(g," %f %f %f \n",medie[0],medie[1],b->val);
         	char filename[10];
-        	if(b->val==0.36||b->val==0.40||b->val==0.42||b->val==0.44||b->val=0.46||b->val=0.53){
+        	if(b->val==0.36||b->val==0.40||b->val==0.42||b->val==0.44||b->val==0.46||b->val==0.53){
        	 			sprintf(filename, "beta%d.txt", p); //it modifies each time the name of the file to be created
       	 		beta[p]=fopen(filename, "w");
        			if(beta[p]==NULL){ //check if the file is opened correctly
