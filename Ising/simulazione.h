@@ -11,7 +11,7 @@
 #define N 50   // lunghezza del reticolo
 int nlatt = N, nvol = N*N; //dimensioni del reticolo (lunghezza del lato e volume)
 int field[N][N]; //campo
-float beta = 0.44, extfield; //beta è il valore della riga considerata dell'array dei beta (beta_array)
+float extfield; //beta è il valore della riga considerata dell'array dei beta (beta_array)
 float xmagn, xene;
 int M = 10000; //per il generatore casuale tra 0 e 1
 int npp[N], nmm[N]; //array per definire le posizioni dei primi vicini del lattice
@@ -192,6 +192,12 @@ void simulazione(float beta){
      perror("File non correttamente aperto");
      exit(1);
     }
+
+    pippo=fopen("magnaene.txt","w");
+    if(pippo==NULL){
+     perror("File non correttamente aperto");
+     exit(1);
+    }
     
     /* lettura dei parametri della simulazione */
     x = fscanf(f, "%d  %d  %d  %f", &iflag, &measures, &i_decorrel, &extfield);
@@ -209,10 +215,10 @@ void simulazione(float beta){
         for(int idec=0; idec<i_decorrel; idec++){
             update_metropolis(beta);
         }
-        
+        fprintf(pippo,"%f  %f  %d",xmagn,xene,iter);
         /* MISURA DELLE VARIABILI FISICHE */
         m_magn = m_magn + abs(magnetization(xmagn));
-        m_ene = m_ene + abs(energy(xene));
+        m_ene = m_ene + energy(xene);
         
     }
     
