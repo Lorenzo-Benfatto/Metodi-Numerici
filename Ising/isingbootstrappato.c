@@ -13,12 +13,12 @@ int main(void){
 	float *dati = malloc(sizeof(long double) * (N-taglio));
 	f=fopen("misure.txt","r");
 	if(f==NULL){
-	 perror("File non correttamente aperto");
+	 perror("Testa di cazzo manca il file da leggere");
 	 exit(1);
 	}
 	g=fopen("resample_binned.txt","w");
 	if(g==NULL){
-	 perror("File non correttamente aperto");
+	 perror("Non riesco a scrivere coglione");
 	 exit(2);
 	}
 	srand(time(NULL));
