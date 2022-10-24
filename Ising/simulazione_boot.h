@@ -208,7 +208,8 @@ void simulazione(float beta, FILE *misure){
         for(int idec=0; idec<i_decorrel; idec++){
             update_metropolis(beta);
         }
-        fprintf(misure, "%f  %f  %d \n", magnetization(xmagn), energy(xene), iter );
+        fprintf(misure, "%f  %f  %d %f \n", magnetization(xmagn), energy(xene), iter, beta);
+
         /* MISURA DELLE VARIABILI FISICHE */
         m_magn = m_magn + magnetization(xmagn);
         m_ene = m_ene + energy(xene);
