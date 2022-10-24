@@ -8,7 +8,7 @@
 
 
 /* ------------------------------------- DICHIARAZIONE DELLE VARIABILI GLOBALI ------------------------------------------- */
-#define N 10   // lunghezza del reticolo
+#define N 30   // lunghezza del reticolo
 int nlatt = N, nvol = N*N; //dimensioni del reticolo (lunghezza del lato e volume)
 int field[N][N]; //campo
 float extfield; //beta è il valore della riga considerata dell'array dei beta (beta_array)

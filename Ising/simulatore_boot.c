@@ -18,8 +18,11 @@ int main(void){
 	f=fopen("beta.txt","r");
 	control_file(f);
     char filemedie[200];
-    sprintf(filemedie, "/Users/margherita/Desktop/UNIPI/QUINT_ANNO/Ising/Nlatt = %d/medie.txt",N);
+    sprintf(filemedie, "/mnt/c/Users/aministratore/Documenti/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Bootstrap/Nuove_versioni/Nlatt = %d/medie.txt",N);
 	g=fopen(filemedie,"w");
+
+	printf("Odio i gay \n");
+
 	control_file(g);
 
 	list *b=NULL;           // lista contenente i valori dei beta, letti da file
@@ -28,8 +31,11 @@ int main(void){
 	FILE *beta[3], *misure[L];          // puntatore per i file che salvano la configurazione, per ciascun beta
 	while(b!=NULL){
         char filemisure[200];
-        sprintf(filemisure, "/Users/margherita/Desktop/UNIPI/QUINT_ANNO/Ising/Nlatt = %d/Risultati/misure%.3f.txt", N, b->val); //it modifies each time the name of the file to be created
+        sprintf(filemisure, "/mnt/c/Users/aministratore/Documenti/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Bootstrap/Nuove_versioni/Nlatt = %d/Risultati/misure%.3f.txt", N, b->val); //it modifies each time the name of the file to be created
         misure[p]=fopen(filemisure, "w");
+
+        printf("Odio i neri \n");
+
         control_file(misure[p]);
 
 		simulazione(b->val, misure[p]); /*eseguo la simulazione per il valore di beta in causa. Funzione di simulazione_boot.h
@@ -41,8 +47,11 @@ int main(void){
 
 			printf("%f\n", b->val);
 	       	char filename[200];
-			sprintf(filename, "/Users/margherita/Desktop/UNIPI/QUINT_ANNO/Ising/Nlatt = %d/Lattice/beta%.3f.txt", N, b->val); //it modifies each time the name of the file to be created
+			sprintf(filename, "/mnt/c/Users/aministratore/Documenti/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Bootstrap/Nuove_versioni/Nlatt = %d/Lattice/beta%.3f.txt", N, b->val); //it modifies each time the name of the file to be created
 	      	beta[s]=fopen(filename, "w");
+
+	      	printf("Odio i rom \n");
+
 	       	control_file(beta[s]);
 
 	       	for(int j=0; j<nlatt; j++){
