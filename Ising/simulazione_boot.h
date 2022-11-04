@@ -8,12 +8,11 @@
 
 
 /* ------------------------------------- DICHIARAZIONE DELLE VARIABILI GLOBALI ------------------------------------------- */
-#define N 10   // lunghezza del reticolo
+#define N  20  // lunghezza del reticolo
 int nlatt = N, nvol = N*N; //dimensioni del reticolo (lunghezza del lato e volume)
 int field[N][N]; //campo
 float extfield; //beta è il valore della riga considerata dell'array dei beta (beta_array)
-float xmagn, xene;
-int M = 10000; //per il generatore casuale tra 0 e 1
+float xmagn = 0, xene = 0;
 int npp[N], nmm[N]; //array per definire le posizioni dei primi vicini del lattice
 long int seed = 674;
 float medie[2]={0,0};
@@ -186,14 +185,15 @@ void simulazione(float beta, FILE *misure){
     float m_magn = 0, m_ene = 0;
     
     /* apertura dei file di input e di output */
-    f=fopen("input.txt","r");
+    f=fopen("/home/dario/Documents/Metodi/Modulo1/Ising/input2.txt","r");
     if(f==NULL){
      perror("File non correttamente aperto");
      exit(1);
     }
     
     /* lettura dei parametri della simulazione */
-    x = fscanf(f, "%d  %d  %d  %f", &iflag, &measures, &i_decorrel, &extfield);
+    int a; //è la larghezza di reticolo, non mi serve a niente qua
+    x = fscanf(f, "%d  %d  %d  %f  %d", &iflag, &measures, &i_decorrel, &extfield, &a);
    
     
     /* OPERAZIONI PRELIMINARI */
@@ -208,7 +208,7 @@ void simulazione(float beta, FILE *misure){
         for(int idec=0; idec<i_decorrel; idec++){
             update_metropolis(beta);
         }
-        fprintf(misure, "%f  %f  %d \n", magnetization(xmagn), energy(xene), iter );
+        fprintf(misure, "%f  %f  %d  %f\n", magnetization(xmagn), energy(xene), iter, beta );
         /* MISURA DELLE VARIABILI FISICHE */
         m_magn = m_magn + magnetization(xmagn);
         m_ene = m_ene + energy(xene);
