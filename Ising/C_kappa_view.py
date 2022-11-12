@@ -14,9 +14,9 @@ startTime = datetime.now()
 directory = r"\\wsl.localhost\Ubuntu\home\dario\Documents\Metodi\Modulo1\Ising\Bootstrap\Nlatt=20\CK"
 
 pylab.figure(1)
-pylab.title('MODELLO DI ISING 2D \n Errore Magnetizzazione bootstrap in funzione del numero di resampling')
-pylab.xlabel('Numero di resampling')
-pylab.ylabel(r'$\sigma$')
+pylab.title('MODELLO DI ISING 2D \n C(k) funzione di autocorrelazione a 2 punti')
+pylab.xlabel('k')
+pylab.ylabel(r'$C(k)$')
 
 # iterate over files in that directory
 for filename in os.listdir(directory):
@@ -40,7 +40,3 @@ for filename in os.listdir(directory):
             pylab.minorticks_on()
 
 pylab.show()
-
-
-
-
