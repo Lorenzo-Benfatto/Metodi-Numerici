@@ -23,7 +23,7 @@ void read_file_input(){ //leggo da file input.txt N e L e altre robe che qui non
     in = fopen("/home/dario/Documents/Metodi/Modulo1/Ising/input2.txt", "r");
     printf("ok0\n");
     control_file(in);
-    int x, iflag, idec; 
+    int x, iflag, idec;  //idec e iflag non servono a niente in questo file, ma li scanfo da input2.txt...
     float extfield;
     x=fscanf(in, "%d  %d  %d  %f  %d", &iflag, &N, &idec, &extfield, &Nlatt );
     fclose(in);
@@ -36,8 +36,8 @@ int main(void){
     control_file(bet);
 
     read_file_input();
-              // lunghezza di un lato del reticolo
-    int i=0, x, y, d=1, taglio=0, idec;          // N = numero di misure, x = variabile per leggere il file, taglio 0 numerto di misure da tagliare prima che termalizzi la storia montecarlo, d = moltiplicatore per il numero di k (lunghezza di correlazione).
+             
+    int i=0, x, y, d=1, taglio=0, idec;  // x = variabile per leggere il file, taglio è numerto di misure da tagliare prima che termalizzi la storia montecarlo, d = moltiplicatore per il numero di k (lunghezza di correlazione).
     //idec è il passo del metropolis fatto dal simulazione.h
     float beta, b , mean_mag, mean_ene, c=0, mag, ene, m, e;            /* c è il valore di C(k). mean_mag e mean_ene sono le medie
                                                                       contenute nel file di medie.txt. mag ene sono le energie per ogni passo del metropolis nel simulazione.h 
@@ -75,7 +75,6 @@ int main(void){
         sprintf(mis,"/home/dario/Documents/Metodi/Modulo1/Ising/Bootstrap/Nlatt=%d/Risultati/misure%.3f.txt", Nlatt, beta);
         misure=fopen(mis,"r");
         printf("%d %f\n", Nlatt, beta);
-        printf("ok3\n");
         control_file(misure);
 
 
@@ -87,11 +86,19 @@ int main(void){
             i++;
 
         }
-        printf("ok4\n");
-        for(int k=0; k<10; k++){
+        float ck0=0;              //mi salvo in ck0 il valore del C(k) per k==0 col quale dovrò normalizzare il resto dei c(k)
+        for(int j=taglio; j<N; j++){
+                ck0=pow((dati[j]-mean_ene),2)+ck0;
+            }
+        ck0=ck0/(N-taglio); 
+
+        printf("il c(k=0) è : %f \n", ck0);  
+
+        for(int k=0; k<50; k++){
             for(int j=taglio; j<N-k*d; j++){
                 c=(dati[j]-mean_ene)*(dati[j+k*d]-mean_ene)+c;
             }
+            c=c/ck0;
             c=c/(N-k*d-taglio);
             fprintf(Ck, "%d  %f\n", k*d, c);
         }
