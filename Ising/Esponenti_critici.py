@@ -1,4 +1,4 @@
-# A programto plot the means of the rebinned bootstrap
+# A program to plot the means of the rebinned bootstrap
 
 import pylab
 import numpy as np
@@ -35,7 +35,8 @@ for filename in os.listdir(directory):
             x=np.loadtxt(f, unpack=False)
             print(np.shape(x))
             #faccio deviazione standard delle medie
-            x = x/vol
+            x = x
+
 
             # salvataggio del valore del numero di resampling a partire dalla stringa
             inizio = f.find('nned')
@@ -50,7 +51,8 @@ for filename in os.listdir(directory):
 
             enemedia=np.mean(m_ene)
             m=np.append(m,enemedia)
-            erre = np.sqrt(2)*np.sqrt(np.sum(m_ene**2)/M - (np.sum(m_ene)**2)/M**2)
+            #erre = np.sqrt(2)*np.sqrt(np.sum(m_ene**2)/M - (np.sum(m_ene)**2)/M**2)
+            erre = np.sqrt(2)*np.std(m_ene, ddof=1)
 
             err_ene = np.append(err_ene, erre)
 
@@ -58,10 +60,9 @@ for filename in os.listdir(directory):
             ene2media=np.mean(m_ene2)
             m2=np.append(m2,ene2media)
             erre2 = np.sqrt(np.sum(m_ene2**2)/M - np.sum(m_ene2/M)**2)
-
             err_ene2=np.append(err_ene2, erre2)
 
-            C = np.append(C, vol*(ene2media - enemedia**2))
+            C = np.append(C, (ene2media - enemedia**2)*vol)
            # C_err = np.append (C_err, np.sqrt(erre**2+erre2**2)/vol)
             print(len(C_err))
 
@@ -72,7 +73,7 @@ print(np.shape(m2))
 
 con = np.stack((m, m2), axis=1)
 
-C_err =np.sqrt(err_ene**2+err_ene2**2+2*(np.cov(con)[1][0])/M)/vol
+C_err =np.sqrt(err_ene**2+err_ene2**2+2*(np.cov(con)[1][0])/M)
 
 C_err = np.array(C_err)
 
@@ -85,7 +86,7 @@ plt.title('MODELLO DI ISING 2D \n Calore specifico al variare del beta')
 plt.xlabel(r'$\beta$')
 plt.ylabel(r'Calore specifico')
 plt.grid()
-plt.errorbar(beta, C, C_err, fmt ='')
+plt.errorbar(beta, C, C_err, marker ='o', linestyle = '')
 #plt.legend()
 plt.minorticks_on()
 
