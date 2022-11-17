@@ -35,7 +35,7 @@ for filename in os.listdir(directory):
             x=np.loadtxt(f, unpack=False)
             print(np.shape(x))
             #faccio deviazione standard delle medie
-            x = x
+            #x = np.abs(x)
 
 
             # salvataggio del valore del numero di resampling a partire dalla stringa
@@ -77,7 +77,16 @@ C_err =np.sqrt(err_ene**2+err_ene2**2+2*(np.cov(con)[1][0])/M)
 
 C_err = np.array(C_err)
 
-print(C_err)
+
+# #salvo su file i dati che poi fitterò
+
+# Saving the array in a text file
+filename = r"\\wsl.localhost\Ubuntu\home\dario\Documents\Metodi\Modulo1\Ising\Bootstrap\Nlatt=100\calore.txt"
+with open(filename, 'w') as f:
+    for a,b in zip(C, C_err):
+        print("%f  %f" % (a, b), file = f)
+
+f.close()
 
 ## Grafico del Calore specifico bootstrappato in funzione dei beta
 
