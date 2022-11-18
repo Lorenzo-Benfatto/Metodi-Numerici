@@ -9,13 +9,12 @@
 #include"/home/dario/Documents/Metodi/ran2.h"
 #include"/home/dario/Documents/Metodi/listfunction.h"
 
-
-#define L 100
+int L, N; //N = numero di misure, L = lunghezza reticolo ----> li leggo da file 
 
 void bootstrap(FILE *f){
     FILE *m ,*e;
     unsigned long s;
-    int i=0,j,k,N=10000,M=100,x,bin=4,taglio=1;         /*N = numero di misure, M = numero di resampling, 
+    int i=0,j,k,M=100,x,bin=4,taglio=0;         /*M = numero di resampling, 
     x serve per scanfare i file, i e j indici ricorsivi, bin è il bin del bootstrap, 
     taglio è per levare le misure non termalizzate*/
     int V=N-taglio;
@@ -79,8 +78,24 @@ void bootstrap(FILE *f){
 }
 
 
+/*==== NOTA: Nel file di input.txt classico non viene specificata la lunghezza del reticolo. Quindi è necessario
+crearne uno che la contenga (io l'ho chiamato input2.txt)*/ 
+void read_file_input(){ /*Mi serve solo per leggermi il numero di misure N e la larghezza del reticolo,
+ gli altri non mi servono a niente, quindi non gli do nemmeno un nome significativo*/
+    FILE *in;
+    in = fopen("/home/dario/Documents/Metodi/Modulo1/Ising/input2.txt", "r");
+    control_file(in);
+    int x, a, c; 
+    float b;
+    x=fscanf(in, "%d  %d  %d  %f  %d", &a, &N, &c, &b, &L  );
+    fclose(in);
+    return ;
+}
+
+
 int main()
 {
+    read_file_input();  // funzione per leggere file con variabili di input (numero di misure, lunghezza del lato del reticolo, iflag per la partenza e campo esterno e idecorrel)
     DIR *folder;
     FILE *input;
     struct dirent *entry;
