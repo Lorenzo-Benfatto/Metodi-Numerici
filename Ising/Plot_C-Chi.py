@@ -21,14 +21,16 @@ binder_err=[]   # errore binder
 C = []      # lista calore specifico
 binder = []  # è il cumulante di binder che ci serve per stimare il beta critico
 m=[]       # media energia
-m2=[]
-m4=[]
+
+# Dati reticolo e resampling
+M = 100  #numero di resampling
+Nlatt = 100
+vol= Nlatt**2
 
 # assign directory
-directory = r"\\wsl.localhost\Ubuntu\home\dario\Documents\Metodi\Modulo1\Ising\Bootstrap\Nlatt=100\Bootstrappo\Magnetizzazione"
+directory = fr"\\wsl.localhost\Ubuntu\home\dario\Documents\Metodi\Modulo1\Ising\Bootstrap\Nlatt={Nlatt}\Bootstrappo\Magnetizzazione"
 
-M = 100  #numero di resampling
-vol= 100**2
+
 
 # iterate over files in that directory
 for filename in os.listdir(directory):
@@ -38,9 +40,8 @@ for filename in os.listdir(directory):
         if f.find('txt')!=-1:
             # i resampling sono scritti per riga
             x=np.loadtxt(f, unpack=False)
-            print(np.shape(x))
             #faccio deviazione standard delle medie
-            #x = np.abs(x)
+            x = np.abs(x)
 
 
             # salvataggio del valore del numero di resampling a partire dalla stringa
@@ -102,7 +103,9 @@ print(beta_C)
 # #salvo su file i dati che poi fitterò
 
 # Saving the array in a text file
-filename = r"\\wsl.localhost\Ubuntu\home\dario\Documents\Metodi\Modulo1\Ising\Bootstrap\Nlatt=100\calore.txt"
+#string = f'calore(Nlatt={Nlatt}).txt'
+filename = fr'\\wsl.localhost\Ubuntu\home\dario\Documents\Metodi\Modulo1\Ising\Bootstrap\Nlatt={Nlatt}\calore(Nlatt={Nlatt}).txt'#'+ string
+
 with open(filename, 'w') as f:
     for a,b,c,d,e in zip(C, C_err, binder, binder_err, beta):
         print("%f  %f  %f  %f  %f" % (a, b, c, d, e), file = f)
@@ -122,5 +125,3 @@ plt.errorbar(beta, C, C_err, marker ='.', linestyle = '')
 plt.minorticks_on()
 
 plt.show()
-
-
