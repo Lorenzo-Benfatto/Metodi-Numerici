@@ -8,6 +8,8 @@ simulatore_boot.c (it needs beta.txt and init.txt)
 \\
 ising_bootstrappato.c
 \\
+storiapontecarlo.py
+\\
 analisi_boot.py
 \\
 fit_exp_crit.py
