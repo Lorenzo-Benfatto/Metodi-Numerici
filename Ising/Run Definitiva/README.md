@@ -7,8 +7,7 @@ modify simulatore.h for the different lattice measures
 simulatore_boot.c (it needs beta.txt and init.txt)
 \\
 ising_bootstrappato.c
-\\
-storiapontecarlo.py
+
 \\
 analisi_boot.py
 \\
