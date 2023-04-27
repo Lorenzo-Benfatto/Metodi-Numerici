@@ -8,7 +8,7 @@ simulatore_boot.c (it needs beta.txt and init.txt)
 \\
 ising_bootstrappato.c
 \\
-analisi_boot.py
+analisiboot.py
 \\
 Plot_C-Chi.py (specify wheter to draw from folder Magnetizzazione or Energia to get respectively susceptivity and specific heat)
 \\
