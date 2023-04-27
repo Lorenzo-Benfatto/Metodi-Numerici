@@ -13,7 +13,7 @@ startTime = datetime.now()
 
 #M=100 #Numero di resampling effettuati nel bootstrap
 
-
+Nlatt=30
 
 # Inizializzo l'array della magnetizzazione
 mag = []
@@ -21,7 +21,7 @@ beta = []
 
 # assign directory
 #directory = r"C:\home\dario\Documents\UNI\Metodi\Modulo1\Ising\Bootstrap\Nlatt=30\Bootstrappo\Magnetizzazione"
-directory = r"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt=30/Bootstrappo/Energia"  #mettere magnetizzzazione ed energia, che vengono fuori da ising_bootstrappato.c, che viene da simulatore_boot.c
+directory = r"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/Energia"  #mettere magnetizzzazione ed energia, che vengono fuori da ising_bootstrappato.c, che viene da simulatore_boot.c
 
 
 # iterate over files in that directory
