@@ -13,19 +13,22 @@ startTime = datetime.now()
 # Inizializzo l'array delle correlazioni
 beta = []
 
+# Dati reticolo e resampling
+M = 100  #numero di resampling
+Nlatt = 70
+vol= Nlatt**2
+
+##############################################    CALORE SPECIFICO     ############################################
+'''CALORE SPECIFICO'''
+
 # ogni valore dei segueti array cambia con beta
 err_ene = []   # errore energia
 C_err = []  # errore calore specifico
 binder_err=[]   # errore binder
 
 C = []      # lista calore specifico
-binder = []  # è il cumulante di binder che ci serve per stimare il beta critico
 m=[]       # media energia
 
-# Dati reticolo e resampling
-M = 100  #numero di resampling
-Nlatt = 30
-vol= Nlatt**2
 
 # assign directory
 directory = fr"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/Energia"
@@ -96,9 +99,9 @@ print(beta_C)
 
 # Saving the array in a text file
 #string = f'calore(Nlatt={Nlatt}).txt'
-filename = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/calo(Nlatt={Nlatt}).txt'#'+ string
+filename1 = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/calo(Nlatt={Nlatt}).txt'#'+ string
 
-with open(filename, 'w') as f:
+with open(filename1, 'w') as f:
     for a,b,c in zip(C, C_err, beta):
         print("%f  %f  %f" % (a, b, c), file = f)
 
@@ -120,7 +123,7 @@ plt.show()
 
 
 
-#####################################################################################################################
+##############################################   SUSCETTIVITà    ######################################################
 '''SUSCETTIVITà'''
 
 # ogni valore dei segueti array cambia con beta
@@ -132,11 +135,6 @@ Susc = []      # lista suscettività
 binder = []  # è il cumulante di binder che ci serve per stimare il beta critico
 magne=[]       # media magnetizzazione
 
-
-# Dati reticolo e resampling
-M = 100  #numero di resampling
-Nlatt = 30
-vol= Nlatt**2
 
 # assign directory
 directory = fr"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/Magnetizzazione"
@@ -171,9 +169,9 @@ for filename in os.listdir(directory):
             '''media della magnetizzazione alla quarta e errore associato (serve per il binder)'''
             m_magne4=np.mean(x**4,axis=1)
 
-            #Calcolo calore specifico e incertezza
-            Susc_res = vol * (m_magne2 - m_magne**2)       # calore specifico per ogni resampling a beta fisso
-            Susc = np.append(Susc, np.mean(Susc_res))        # array del calore specifico al variare di beta
+            #Suscettività e incertezza
+            Susc_res = vol * (m_magne2 - m_magne**2)       # suscettività per ogni resampling a beta fisso
+            Susc = np.append(Susc, np.mean(Susc_res))        # array della suscettività al variare di beta
             Susc_err_res = np.std(Susc_res, ddof=1)       # deviazione standard per singolo resampling
             Susc_err = np.append(Susc_err, Susc_err_res)
 
@@ -204,17 +202,16 @@ print(beta_Susc)
 # #salvo su file i dati che poi fitterò
 
 # Saving the array in a text file
-#string = f'calore(Nlatt={Nlatt}).txt'
-filename = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/sushi(Nlatt={Nlatt}).txt'#'+ string
+filename2 = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/sushi(Nlatt={Nlatt}).txt'#'+ string
 
-with open(filename, 'w') as f:
-    for a,b,c,d,e in zip(C, C_err, binder, binder_err, beta):
+with open(filename2, 'w') as f:
+    for a,b,c,d,e in zip(Susc, Susc_err, binder, binder_err, beta):
         print("%f  %f  %f  %f  %f" % (a, b, c, d, e), file = f)
 
 f.close()
 
 
-## Grafico del Calore specifico bootstrappato in funzione dei beta
+## Grafico del Suscettività bootstrappata in funzione dei beta
 
 plt.figure(2)
 plt.title('MODELLO DI ISING 2D \n Suscettività al variare del beta')
@@ -229,7 +226,7 @@ plt.show()
 
 
 
-#####################################################################################################################
+#######################################     MAGNETIZZAZIONE        ######################################################
 '''MAgnetizzazione'''
 
 # Inizializzo l'array della magnetizzazione
