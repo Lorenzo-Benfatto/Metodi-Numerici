@@ -8,11 +8,11 @@ simulatore_boot.c (it needs beta.txt and init.txt)
 \\
 ising_bootstrappato.c
 \\
-analisiboot.py
+analisiboot.py (optional, just to watch the energy plot)
 \\
-Plot_C-Chi.py (specify wheter to draw from folder Magnetizzazione or Energia to get respectively susceptivity and specific heat)
+Plot_C-Chi.py
 \\
-fit_exp_crit_susc.py  fit_exp_crit_cal.py
+fit_exp_crit
 \\
 roba FSS non ancora fatta
 \\
