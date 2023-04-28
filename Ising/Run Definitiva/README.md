@@ -4,7 +4,7 @@ One needs to (in order):
 \\
 modify simulatore_boot.h for the different lattice measures
 \\
-simulatore_boot.c (it needs beta.txt and init.txt)
+simulatore_boot.c (it needs beta.txt and MODIFY init.txt)
 \\
 ising_bootstrappato.c
 \\
