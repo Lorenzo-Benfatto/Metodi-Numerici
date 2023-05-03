@@ -11,13 +11,12 @@ from datetime import datetime
 startTime = datetime.now()
 
 # Inizializzo l'array delle correlazioni
-beta = []
+
 
 # Dati reticolo e resampling
 M = 100  #numero di resampling
-#Nlatt = 70
 
-directory = "/Users/margherita/Desktop/UNIPI/QUINT_ANNO/Ising"
+directory = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva"
 
 #Creazione di una figura unica per mettere a confronto lo strain dei 3 interferometri
 fig_c, ax_c = plt.subplots(figsize=(10,7))
@@ -30,16 +29,19 @@ for root, dirs, files in os.walk(directory):
     #if os.path.isdir(dirs) == True:
         index = dirs[i].find('Nlatt')
         if index !=-1:
-            inizio = index + 8
-            fine = index + 10
+            inizio = index + 6
+            fine = index + 8
             Nlatt = (dirs[i])[inizio:fine]
+            Nlatt=int(Nlatt)
             print(Nlatt)
 
 
 
             # Definizione volume reticolo
             vol= Nlatt**2
-
+            #inizializzo il beta
+            beta = []
+            
             ##############################################    CALORE SPECIFICO     ############################################
 
 
@@ -53,8 +55,7 @@ for root, dirs, files in os.walk(directory):
 
 
             # assign directory
-            directory = fr"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/Energia"
-
+            directory = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva/Nlatt={Nlatt}/Bootstrappo/Energia"
 
 
             # iterate over files in that directory
@@ -68,14 +69,13 @@ for root, dirs, files in os.walk(directory):
                         #faccio deviazione standard delle medie
                         x = np.abs(x)
 
-
+                       
                         # salvataggio del valore del numero di resampling a partire dalla stringa
                         inizio = f.find('nned')
                         if(inizio!=-1):
                             inizio = inizio + 4
                             fine = inizio + 5
-
-                        b=float(f[inizio:fine])
+                            b=float(f[inizio:fine])
                         beta = np.append(beta, b)
 
                         m_ene=np.mean(x,axis=1) # array con la media delle energie per ogni ricampionamento a beta fisso
@@ -105,10 +105,10 @@ for root, dirs, files in os.walk(directory):
             # Conversione delle liste ottenute in array di numpy
             beta = np.array(beta)
             C = np.array(C)
-            binder=np.array(binder)
+           # binder=np.array(binder)
 
             C_err = np.array(C_err)
-            binder_err = np.array(binder_err)
+           # binder_err = np.array(binder_err)
 
             '''
             QUI VA FATTO GRAFICO PER I DIVERSI RETICOLI GUARDANDO QUANDO SI SI INTERSECANO LE CURVE PER IL BINDER AL VARIARE DI BETA (VISTO DAL GENERALE)
@@ -120,7 +120,7 @@ for root, dirs, files in os.walk(directory):
 
             # Saving the array in a text file
             #string = f'calore(Nlatt={Nlatt}).txt'
-            filename1 = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/calo(Nlatt={Nlatt}).txt'#'+ string
+            filename1 = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva/Nlatt={Nlatt}/Bootstrappo/calo(Nlatt={Nlatt}).txt+ string"
 
             with open(filename1, 'w') as f:
                 for a,b,c in zip(C, C_err, beta):
@@ -132,16 +132,7 @@ for root, dirs, files in os.walk(directory):
             ## Grafico del Calore specifico bootstrappato in funzione dei beta
 
 
-            ax_c.title('MODELLO DI ISING 2D \n Calore specifico al variare del beta')
-            ax_c.xlabel(r'$\beta$')
-            ax_c.ylabel(r'Calore specifico')
-            ax_c.grid()
-            ax_c.errorbar(beta, C, C_err*2, marker ='.', linestyle = '')
-            #plt.legend()
-            ax_c.minorticks_on()
-
-            plt.show()
-
+            ax_c.errorbar(beta, C, C_err*2, marker ='.', linestyle = '', label=f'Nlatt = {Nlatt}')
 
 
             ##############################################   SUSCETTIVITà    ######################################################
@@ -158,7 +149,7 @@ for root, dirs, files in os.walk(directory):
 
 
             # assign directory
-            directory = fr"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/Magnetizzazione"
+            directory = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva/Nlatt={Nlatt}/Bootstrappo/Magnetizzazione"
 
 
 
@@ -208,10 +199,10 @@ for root, dirs, files in os.walk(directory):
             # Conversione delle liste ottenute in array di numpy
             beta = np.array(beta)
             Susc = np.array(Susc)
-            binder=np.array(binder)
+           # binder=np.array(binder)
 
             Susc_err = np.array(Susc_err)
-            binder_err = np.array(binder_err)
+           # binder_err = np.array(binder_err)
 
             '''
             QUI VA FATTO GRAFICO PER I DIVERSI RETICOLI GUARDANDO QUANDO SI SI INTERSECANO LE CURVE PER IL BINDER AL VARIARE DI BETA (VISTO DAL GENERALE)
@@ -222,7 +213,7 @@ for root, dirs, files in os.walk(directory):
             # #salvo su file i dati che poi fitterò
 
             # Saving the array in a text file
-            filename2 = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/sushi(Nlatt={Nlatt}).txt'#'+ string
+            filename2 = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva/Nlatt={Nlatt}/Bootstrappo/sushi(Nlatt={Nlatt}).txt+ string"
 
             with open(filename2, 'w') as f:
                 for a,b,c,d,e in zip(Susc, Susc_err, binder, binder_err, beta):
@@ -234,18 +225,9 @@ for root, dirs, files in os.walk(directory):
             ## Grafico del Suscettività bootstrappata in funzione dei beta
 
 
-            ax_s.title('MODELLO DI ISING 2D \n Suscettività al variare del beta')
-            ax_s.xlabel(r'$\beta$')
-            ax_s.ylabel(r'Suscettività')
-            ax_s.grid()
-            ax_s.errorbar(beta, Susc, Susc_err*2, marker ='.', linestyle = '')
-            #plt.legend()
-            ax_s.minorticks_on()
 
-            plt.show()
-
-
-
+            ax_s.errorbar(beta, Susc, Susc_err*2, marker ='.', linestyle = '',label=f'Nlatt = {Nlatt}')
+        
             #######################################     MAGNETIZZAZIONE        ######################################################
             '''MAgnetizzazione'''
 
@@ -257,7 +239,7 @@ for root, dirs, files in os.walk(directory):
 
             # assign directory
             #directory = r"C:\home\dario\Documents\UNI\Metodi\Modulo1\Ising\Bootstrap\Nlatt=30\Bootstrappo\Magnetizzazione"
-            directory = fr"/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/Magnetizzazione"  #mettere magnetizzzazione ed energia, che vengono fuori da ising_bootstrappato.c, che viene da simulatore_boot.c
+            directory = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva/Nlatt={Nlatt}/Bootstrappo/Magnetizzazione"  #mettere magnetizzzazione ed energia, che vengono fuori da ising_bootstrappato.c, che viene da simulatore_boot.c
 
 
             # iterate over files in that directory
@@ -292,7 +274,7 @@ for root, dirs, files in os.walk(directory):
 
             # Saving the array in a text file
             #string = f'calore(Nlatt={Nlatt}).txt'
-            filename = fr'/home/dario/Documents/UNI/Metodi/Modulo1/Ising/Bootstrap/Nlatt={Nlatt}/Bootstrappo/magne(Nlatt={Nlatt}).txt'#'+ string
+            filename = fr"/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-1/Programmi_C/Ising/Run Definitiva/Nlatt={Nlatt}/Bootstrappo/magne(Nlatt={Nlatt}).txt+ string"
 
             with open(filename, 'w') as f:
                 for a,b,c in zip(mag, err_mag, beta):
@@ -307,12 +289,27 @@ for root, dirs, files in os.walk(directory):
             print(mag)
 
             # Grafico della magnetizzazione bootstrappata in funzione dei beta
+            ax_m.errorbar(beta, mag, linestyle = '', marker ='.',label=f'Nlatt = {Nlatt}')
+            
+            
+ax_c.title.set_text('MODELLO DI ISING 2D \n Calore specifico al variare del beta')
+ax_c.set_xlabel(r'$\beta$')
+ax_c.set_ylabel(r'Calore specifico')
+ax_c.grid()
+ax_c.minorticks_on()
+ax_c.legend()
 
+ax_s.title.set_text('MODELLO DI ISING 2D \n Suscettività al variare del beta')
+ax_s.set_xlabel(r'$\beta$')
+ax_s.set_ylabel(r'Suscettività')
+ax_s.grid()
+ax_s.minorticks_on()
+ax_s.legend()
 
-            ax_m.title('MODELLO DI ISING 2D \n Magnetizzazione intorno alla transizione')
-            ax_m.xlabel(r'$\beta$')
-            ax_m.ylabel('M')
-            ax_m.grid()
-            ax_m.errorbar(beta, mag, linestyle = '', color = 'red', marker ='.')
-            ax_m.minorticks_on()
-            plt.show()
+ax_m.title.set_text('MODELLO DI ISING 2D \n Magnetizzazione intorno alla transizione')
+ax_m.set_xlabel(r'$\beta$')
+ax_m.set_ylabel('M')
+ax_m.grid()            
+ax_m.minorticks_on()
+ax_m.legend()
+plt.show()
