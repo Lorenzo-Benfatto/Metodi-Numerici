@@ -14,7 +14,7 @@ Plot_C-Chi.py
 \\
 fit_exp_crit
 \\
-ciclo_plot.py (to plot different lattice data in the same figure)
+for_plot.py (to plot different lattice data in the same figure)
 \\
 roba FSS non ancora fatta
 \\
