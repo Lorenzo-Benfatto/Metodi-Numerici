@@ -14,6 +14,8 @@ Plot_C-Chi.py
 \\
 fit_exp_crit
 \\
+ciclo_plot.py (to plot different lattice data in the same figure)
+\\
 roba FSS non ancora fatta
 \\
 In order to look at the physical situation of polarized spins, one can also run Plot3d.py
