@@ -12,11 +12,15 @@ analisiboot.py (optional, just to watch the energy plot)
 \\
 Plot_C-Chi.py
 \\
+stima_Beta_C
+\\
 fit_exp_crit
 \\
 for_plot.py (to plot different lattice data in the same figure)
 \\
-roba FSS non ancora fatta
+FSS.py
+\\
+storiapontecarlo.py to look at the Markov chain history
 \\
 In order to look at the physical situation of polarized spins, one can also run Plot3d.py
 \\
