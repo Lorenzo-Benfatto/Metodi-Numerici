@@ -24,4 +24,6 @@ storiapontecarlo.py to look at the Markov chain history
 \\
 In order to look at the physical situation of polarized spins, one can also run Plot3d.py
 \\
+Run C(k).c and C(k)_view.py to look at correlations (remember to change ene in mag according to the interesting stuff)
+\\
 All the others .h are necessary for the programs to work
