@@ -16,5 +16,14 @@ pylab.ylabel('')
 pylab.hist(field, 40, density=True)
 pylab.minorticks_on()
 
+x=np.linspace(-1.25,0.5,10000)
+
+A=1.6
+B=0.355
+C=0.07
+
+ground=A*np.exp(-((x+B)**2)/(2*C))
+pylab.errorbar(x, ground, marker ='', color='black', linestyle = '-')
+
 
 pylab.show()
