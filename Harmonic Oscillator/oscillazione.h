@@ -2,9 +2,9 @@
 #include<stdlib.h>
 #include<time.h>
 #include<math.h>
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/ran2.h"
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/usefulstuff.h"
-
+#include"/home/dario/Documents/UNI/Metodi/ran2.h"
+#include"/home/dario/Documents/UNI/Metodi/usefulstuff.h"
+#include"/home/dario/Documents/UNI/Metodi/listfunction.h"
 /* Programma per la simulazione dell'oscillatore armonico*/
 
 #define N 10
@@ -69,7 +69,7 @@ void initialize_lattice(int iflag){
 
 /*funzione per avanzare col metropolis e modificare la configurazione*/
 
-void update_metropolis(FILE * acc){
+void update_metropolis(){
     float c1, c2; //sono solo shortcut per scrivere 1/eta e altra funz di eta
     int ip, im; //coordinate dei 2 primi vicini
     float force, phi, phi_prova;  //force = forza del campo intorno; phi = valore attuale del campo; phi_prova = valore di prova del campo
@@ -101,9 +101,7 @@ void update_metropolis(FILE * acc){
       	}
         else {
         	var=0;
-        }
-        fprintf(acc, "%d\n",var);
-        
+        }        
     }
     
     return;
@@ -128,22 +126,14 @@ double * measure(double obs[3]){
     return obs;
 }
 
-int Accettanza(FILE *acc){
-    for (int i = 1; i<i_term+1; i++){
-        update_metropolis(acc);
-}
-    return;
-   }
-
 
 /*=================================== SIMULAZIONE =============================================*/
 
-int Harmonic_metropolis(float eta, FILE *misure){
-	FILE * acc; //file per vedere l'accettanza
-    FILE * lat, *input, *misure; // file in cui stampo il field (lat) e da cui prendo i valori iniziali ( init )
+void Harmonic_metropolis(float eta, FILE *misure){
+    FILE * lat, *input; // file in cui stampo il field (lat) e da cui prendo i valori iniziali ( init )
     int x, l; //per leggere l'init.txt; l è l'Nlatt che qui non serve a niente
     //OPERAZIONI PRELIMINARI
-    input = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/input.txt","r" );
+    input = fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/input.txt","r");
     printf("1\n");
     control_file(input);
     printf("2\n");
@@ -153,20 +143,21 @@ int Harmonic_metropolis(float eta, FILE *misure){
     printf("4\n");
     x= fscanf(input, "%f  %d  %d  %d  %d  %d", &d_metro, &measures, &i_decorrel, &iflag, &i_term, &l);
     printf("5\n");
-    lat = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/Oscillo/lattice.txt","w" );
+    lat = fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/lattice.txt","w" );
     printf("6\n");
     control_file(lat);
     printf("7\n");
 
     initialize_lattice(iflag);
     geometry();
-
+    printf("8\n");
     //SESSIONE ALL'EQUILIBRIO con MISURE
     double obs[3]={0,0,0};
     for (int iter=0; iter<measures; iter++){
         // AGGIORNAMENTO CONFIGURAZIONE
         for(int idec=0; idec<i_decorrel; idec++ ){
-            update_metropolis(acc);
+            update_metropolis();
+            //printf("si %d\n", idec);
             for (int i = 0; i < Nlatt; i++){  //stampo su file il field ma non so a cosa serva e cosa si debba vedere
                 fprintf(lat, "%f  ", field[i]);}
             
@@ -180,7 +171,6 @@ int Harmonic_metropolis(float eta, FILE *misure){
     }
 
     //fclose(lat);
-    fclose(acc);
     fclose(misure);
     fclose(input);
     return;
