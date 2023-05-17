@@ -10,4 +10,6 @@ istogramma_delta_oscillatore.py to find the good delta
 \n
 boot_analisi.py to analize the bootstrapped data
 \n
-storiamontecarlo.py to look ath the Markov chain history
+storiamontecarlo.py to look at the Markov chain history
+\n
+Istogramma_Cammini.py to look at the gaussian distribution of the ground state
