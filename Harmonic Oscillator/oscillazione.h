@@ -128,6 +128,13 @@ double * measure(double obs[3]){
     return obs;
 }
 
+int Accettanza(FILE *acc){
+    for (int i = 1; i<i_term+1; i++){
+        update_metropolis(acc);
+}
+    return;
+   }
+
 
 /*=================================== SIMULAZIONE =============================================*/
 
@@ -153,16 +160,6 @@ int Harmonic_metropolis(float eta, FILE *misure){
 
     initialize_lattice(iflag);
     geometry();
-
-
-    //file per accettanza
-//    acc=fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/Oscillo/accettanza.txt","w");
-//    control_file(acc);
-    //TERMALIZZAZIONE
-//    for (int i = 1; i<i_term+1; i++){
-//        update_metropolis(acc);
-//    }
-
 
     //SESSIONE ALL'EQUILIBRIO con MISURE
     double obs[3]={0,0,0};
