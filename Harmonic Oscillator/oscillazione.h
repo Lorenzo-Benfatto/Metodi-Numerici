@@ -134,23 +134,24 @@ void Harmonic_metropolis(float eta, FILE *misure){
     int x, l; //per leggere l'init.txt; l è l'Nlatt che qui non serve a niente
     //OPERAZIONI PRELIMINARI
     input = fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/input.txt","r");
-    printf("1\n");
+    //printf("1\n");
     control_file(input);
-    printf("2\n");
-//   misure = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/Oscillo/misure(eta=%f).txt","w" );
-//    printf("3\n");
-//   control_file(misure);
-    printf("4\n");
+    //printf("4\n");
     x= fscanf(input, "%f  %d  %d  %d  %d  %d", &d_metro, &measures, &i_decorrel, &iflag, &i_term, &l);
-    printf("5\n");
-    lat = fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/lattice.txt","w" );
-    printf("6\n");
-    control_file(lat);
-    printf("7\n");
+    //printf("5\n");
+    //////////////////////////////////////////////////////////////
+    //Da scommentare nel caso si voglia stampare il path ad ogni update_metropolis
 
+    /*char path[200];
+    sprintf(path,"/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/Path/lattice_eta=%.1f.txt",eta);
+    lat = fopen(path,"w" );
+    //printf("6\n");
+    control_file(lat);
+    //printf("7\n");*/
+    //////////////////////////////////////////////////////////////
     initialize_lattice(iflag);
     geometry();
-    printf("8\n");
+    //printf("8\n");
     //SESSIONE ALL'EQUILIBRIO con MISURE
     double obs[3]={0,0,0};
     for (int iter=0; iter<measures; iter++){
@@ -158,10 +159,14 @@ void Harmonic_metropolis(float eta, FILE *misure){
         for(int idec=0; idec<i_decorrel; idec++ ){
             update_metropolis();
             //printf("si %d\n", idec);
-            for (int i = 0; i < Nlatt; i++){  //stampo su file il field ma non so a cosa serva e cosa si debba vedere
+//////////////////////////////////////////////////////////////////////////////////////////////
+            //Da scommentare nel caso si voglia stampare il path ad ogni update_metropolis
+
+            /*for (int i = 0; i < Nlatt; i++){  //stampo su file il field ma non so a cosa serva e cosa si debba vedere
                 fprintf(lat, "%f  ", field[i]);}
             
-            fprintf(lat, "\n");
+            fprintf(lat, "\n");*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         obs[0] = measure(obs)[0];
         obs[1] = measure(obs)[1];
@@ -171,7 +176,6 @@ void Harmonic_metropolis(float eta, FILE *misure){
     }
 
     //fclose(lat);
-    fclose(misure);
     fclose(input);
     return;
 
