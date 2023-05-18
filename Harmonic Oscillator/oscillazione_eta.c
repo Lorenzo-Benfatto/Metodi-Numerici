@@ -38,8 +38,12 @@ int main(void){
 		 ennepereta=val_posizione(0,eta);
 		 eta=move_to_position(1,eta);
 		 while(eta!=NULL){
-        char filemisure[200];
-        sprintf(filemisure, "/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/Eta/misure_eta=%.3f.txt", eta->val); //it modifies each time the name of the file to etae created
+        char filemisure[500];
+        float penne;
+        penne=ennepereta/(eta->val);
+        int enne;
+        enne=(int)penne;
+        sprintf(filemisure, "/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/Eta/misure(N=%d)_eta=%.3f.txt", enne, eta->val); //it modifies each time the name of the file to etae created
         misure[p]=fopen(filemisure, "w");
         control_file(misure[p]);
 
@@ -71,8 +75,8 @@ int main(void){
 	     singoloeta=val_posizione(0,N);
 	     N=move_to_position(1,N);
 	     while(N!=NULL){
-        char filemisure[200];
-        sprintf(filemisure, "/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/N_variabile/misure_N=%.3f.txt", N->val); //it modifies each time the name of the file to etae created
+        char filemisure[500];
+        sprintf(filemisure, "/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/N_variabile/misure(eta=%.3f)_N=%.3f.txt", singoloeta, N->val); //it modifies each time the name of the file to etae created
         misure[p]=fopen(filemisure, "w");
         control_file(misure[p]);
 
