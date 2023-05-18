@@ -7,13 +7,13 @@
 #include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/listfunction.h"
 /* Programma per la simulazione dell'oscillatore armonico*/
 
-#define N 10
-int Nlatt=N;
+#define Nmax 10000000
+int Nlatt;
 long int seed = 13;
 float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta) 
 int iflag, measures, i_decorrel, i_term;  //vedi ising. i_term = passo di termalizzazione
-int npp[N], nmm[N]; //array per definire le posizioni dei primi vicini del lattice
-float field[N];
+int npp[Nmax], nmm[Nmax]; //array per definire le posizioni dei primi vicini del lattice
+float field[Nmax];
 
 
 /* per ogni coordinata definisco il passo in avanti o indietro con le opportune condizioni al bordo*/
@@ -127,17 +127,21 @@ double * measure(double obs[3]){
 }
 
 
+
 /*=================================== SIMULAZIONE =============================================*/
 
-void Harmonic_metropolis(float eta, FILE *misure){
+// y è Nlatt o eta e viene letto come lista dopo primovalore dal file valori.txt
+
+void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     FILE * lat, *input; // file in cui stampo il field (lat) e da cui prendo i valori iniziali ( init )
-    int x, l; //per leggere l'init.txt; l è l'Nlatt che qui non serve a niente
+    int x; //per leggere l'init.txt; l è l'Nlatt che qui non serve a niente
     //OPERAZIONI PRELIMINARI
+    float eta;
     input = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/input.txt","r");
     //printf("1\n");
     control_file(input);
     //printf("4\n");
-    x= fscanf(input, "%f  %d  %d  %d  %d  %d", &d_metro, &measures, &i_decorrel, &iflag, &i_term, &l);
+    x= fscanf(input, "%f  %d  %d  %d  %d", &d_metro, &measures, &i_decorrel, &iflag, &i_term);
     //printf("5\n");
     //////////////////////////////////////////////////////////////
     //Da scommentare nel caso si voglia stampare il path ad ogni update_metropolis
@@ -149,6 +153,17 @@ void Harmonic_metropolis(float eta, FILE *misure){
     control_file(lat);
     //printf("7\n");*/
     //////////////////////////////////////////////////////////////
+
+    if(scelta==1){
+        eta=y;
+        Nlatt=primovalore/eta;
+        Nlatt=(int)Nlatt;
+    }
+    else {
+        Nlatt=y;
+        eta=primovalore;
+    }
+
     initialize_lattice(iflag);
     geometry();
     //printf("8\n");
@@ -174,6 +189,7 @@ void Harmonic_metropolis(float eta, FILE *misure){
         //printf("%lf  %lf  %d\n", obs[0], obs[1], iter);
         fprintf(misure,"%lf  %lf %lf  %d\n", obs[0], obs[1], obs[2], iter); //prendo misure a questa configurazione
     }
+
 
     //fclose(lat);
     fclose(input);
