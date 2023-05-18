@@ -186,7 +186,21 @@ void print_lista(list * testa){
 	}
 }
 
-
+//stampa la lista di interi su terminale
+//Non uso un puntatore ausiliario per scorrere la lista di interi, poiché non mi serve tenermi salvato l'indirizzo della testa
+void print_lista_int(list_int * testa){
+	if(testa != NULL){
+		printf("TESTA -> ");
+		while(testa != NULL){
+			printf("%d -> ",testa->val);
+			testa = testa->next;
+		}
+	    printf("NULL \n");
+	}
+	else {
+		printf("LISTA VUOTA \n");
+	}
+}
 //funzione per stampare la lista su file
 //presuppone che il file sia già stato aperto nel main in cui viene chiamata
 //Non uso un puntatore ausiliario per scorrere la lista, poiché non mi serve tenermi salvato l'indirizzo della testa
@@ -245,12 +259,18 @@ list *move_to_position(int position, list * testa){
 //cerca un elemento specifico, utile ad esempio per le rm_posizione o agg_posizione
 // Non uso un puntatore ausiliario per scorrere la lista, tanto ritorna un intero
 float val_posizione(int pos,list* testa){
-	testa=move_to_position(pos,testa);
-	return testa->val;
+	int i=0;
+	if(i==pos) return testa->val;
+	else{
+		while(i!=pos){
+			testa=testa->next;
+			i++;
+		}
+		return testa->val;}
 }
 
 //mi sposto nella posizione della lista che voglio
-list_int *move_to_position_int(int position, list * testa){
+list_int *move_to_position_int(int position, list_int * testa){
 	for(int i=0; i<position; i++){
 		testa=testa->next;
 	}
@@ -259,9 +279,15 @@ list_int *move_to_position_int(int position, list * testa){
 
 //cerca un elemento specifico, utile ad esempio per le rm_posizione o agg_posizione
 // Non uso un puntatore ausiliario per scorrere la lista, tanto ritorna un intero
-int val_posizione_int(int pos,list* testa){
-	testa=move_to_position(pos,testa);
-	return testa->val;
+int val_posizione_int(int pos,list_int* testa){
+	int i=0;
+	if(i==pos) return testa->val;
+	else{
+		while(i!=pos){
+			testa=testa->next;
+			i++;
+		}
+		return testa->val;}
 }
 
 
