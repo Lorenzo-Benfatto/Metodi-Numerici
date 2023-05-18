@@ -2,15 +2,15 @@
 #include<stdlib.h>
 #include<time.h>
 #include<math.h>
-#include"/home/dario/Documents/UNI/Metodi/ran2.h"
-#include"/home/dario/Documents/UNI/Metodi/usefulstuff.h"
-#include"/home/dario/Documents/UNI/Metodi/listfunction.h"
+#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/ran2.h"
+#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/usefulstuff.h"
+#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/listfunction.h"
 /* Programma per la simulazione dell'oscillatore armonico*/
 
 #define N 10
 int Nlatt=N;
 long int seed = 13;
-float eta, d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta) 
+float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta) 
 int iflag, measures, i_decorrel, i_term;  //vedi ising. i_term = passo di termalizzazione
 int npp[N], nmm[N]; //array per definire le posizioni dei primi vicini del lattice
 float field[N];
@@ -69,7 +69,7 @@ void initialize_lattice(int iflag){
 
 /*funzione per avanzare col metropolis e modificare la configurazione*/
 
-void update_metropolis(){
+void update_metropolis(float eta){
     float c1, c2; //sono solo shortcut per scrivere 1/eta e altra funz di eta
     int ip, im; //coordinate dei 2 primi vicini
     float force, phi, phi_prova;  //force = forza del campo intorno; phi = valore attuale del campo; phi_prova = valore di prova del campo
@@ -98,9 +98,9 @@ void update_metropolis(){
         if(x<p_rat){
           field[i]=phi_prova;  //test accettanza, se p_rat>1 accetto
           var=1;
-      	}
+        }
         else {
-        	var=0;
+            var=0;
         }        
     }
     
@@ -133,7 +133,7 @@ void Harmonic_metropolis(float eta, FILE *misure){
     FILE * lat, *input; // file in cui stampo il field (lat) e da cui prendo i valori iniziali ( init )
     int x, l; //per leggere l'init.txt; l è l'Nlatt che qui non serve a niente
     //OPERAZIONI PRELIMINARI
-    input = fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/input.txt","r");
+    input = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/input.txt","r");
     //printf("1\n");
     control_file(input);
     //printf("4\n");
@@ -157,7 +157,7 @@ void Harmonic_metropolis(float eta, FILE *misure){
     for (int iter=0; iter<measures; iter++){
         // AGGIORNAMENTO CONFIGURAZIONE
         for(int idec=0; idec<i_decorrel; idec++ ){
-            update_metropolis();
+            update_metropolis(eta);
             //printf("si %d\n", idec);
 //////////////////////////////////////////////////////////////////////////////////////////////
             //Da scommentare nel caso si voglia stampare il path ad ogni update_metropolis
