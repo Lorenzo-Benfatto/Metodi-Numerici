@@ -1,4 +1,4 @@
-#include"/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/oscillazione.h"
+#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/oscillazione.h"
 
 
 /* IN QUESTO CODICE VIENE ESEGUITA LA SIMULAZIONE MONTECARLO PER VARI VALORI DI eta, RIPORTATI NEL FILE "eta.txt". 
@@ -11,30 +11,89 @@ VALORE DI eta */
 int main(void){
 	FILE *f;         // puntatore al file degli eta
 	int p=0, L;         // p serve per scorrere il file degli eta e L è la lunghezza dell'array degli eta. 
-
-	f=fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/eta.txt","r");
+	float ennepereta;
+	float singoloeta;
+	f=fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/valori.txt","r");
 	control_file(f);
 
 	list *eta=NULL;           // lista contenente i valori degli eta, letti da file
-	eta = scan_file(f,eta);         // lettura degli valori degli eta, con funzione ("listfunction.h")
-	L=count(eta);         // funzione che conta la lunghezza di una lista ("listfunction.h")
+	list *N=NULL;
 	FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun eta
-	while(eta!=NULL){
+	
+	    printf("######################################################## \n");
+        printf("       Per simulare il limite al continuo digiti 1       \n");
+        printf("######################################################## \n");
+        printf("   Per simulare la variazione di temperatura digiti 0    \n");
+        printf("######################################################## \n");
+
+        int scelta;
+        scanf("%d", &scelta);
+
+         if(scelta==1){
+         printf("############################################################# \n");
+         printf("Ha scelto di simulare il limite al continuo, buona giornata\n");
+         printf("############################################################# \n");
+         eta = scan_file(f,eta);         // lettura degli valori degli eta, con funzione ("listfunction.h")
+		 L=count(eta)-1;         // funzione che conta la lunghezza di una lista ("listfunction.h")
+		 ennepereta=val_posizione(0,eta);
+		 eta=move_to_position(1,eta);
+		 while(eta!=NULL){
         char filemisure[200];
-        sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/Eta/misure_eta=%.1f.txt", eta->val); //it modifies each time the name of the file to etae created
+        sprintf(filemisure, "/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/Eta/misure_eta=%.3f.txt", eta->val); //it modifies each time the name of the file to etae created
         misure[p]=fopen(filemisure, "w");
         control_file(misure[p]);
 
-		Harmonic_metropolis(eta->val, misure[p]); /*eseguo la simulazione per il valore di eta in causa. 
+        Harmonic_metropolis(eta->val, misure[p], scelta, ennepereta); 
+         /*eseguo la simulazione per il valore di eta in causa. 
 		Funzione di oscillazione.h Mi creerà automaticamente un file di misure contenente i valori delle osservabili che
 		ci interessano (y^2medio, Dy^2medio, ymedio) e eta associato per ogni misura fatta. */
-     	
+ 
+         printf("######################################################## \n");
+         printf("              Ho terminato il valore %f                  \n", eta->val);
+         printf("######################################################## \n");      
+
         fclose(misure[p]);
-     	printf("ho fatto il etan numero %d, stai sciallo \n", p); 
 		eta=eta->next;
 		p++;
 	}
-	printf("Tutto a posto \n");
+        }
+
+
+// DOPO C'è DA METTERE SCELTA TRA LE OPZIONI DI HARMONIC_OSCILLATOR E FARGLI FARE COSE DIVERSE
+
+
+     	else {
+         printf("######################################################## \n");
+         printf("Ha scelto di variare la temperatura, buona giornata\n");
+         printf("######################################################## \n");
+         N = scan_file(f,N);         // lettura degli valori degli eta, con funzione ("listfunction.h")
+	     L=count(N)-1;         // funzione che conta la lunghezza di una lista ("listfunction.h")
+	     singoloeta=val_posizione(0,N);
+	     N=move_to_position(1,N);
+	     while(N!=NULL){
+        char filemisure[200];
+        sprintf(filemisure, "/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/N_variabile/misure_N=%.3f.txt", N->val); //it modifies each time the name of the file to etae created
+        misure[p]=fopen(filemisure, "w");
+        control_file(misure[p]);
+
+        Harmonic_metropolis(N->val, misure[p], scelta, singoloeta); 
+         /*eseguo la simulazione per il valore di eta in causa. 
+		Funzione di oscillazione.h Mi creerà automaticamente un file di misure contenente i valori delle osservabili che
+		ci interessano (y^2medio, Dy^2medio, ymedio) e eta associato per ogni misura fatta. */
+         printf("######################################################## \n");
+         printf("              Ho terminato il valore %f                  \n", N->val);
+         printf("######################################################## \n");
+
+        fclose(misure[p]);
+		N=N->next;
+		p++;
+	}
+        }
+
+
+    printf("############################################################# \n");
+    printf("Ci auguriamo sia stata una piacevole esperienza, arrivederci!\n");
+    printf("############################################################# \n");
 	fclose(f);
 	return 0;
 }
