@@ -76,7 +76,7 @@ int main(void){
             FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun eta
             while(N!=NULL){
                 char filemisure[500];
-                sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/misure(eta=%.3f)_N=%.3f.txt", singoloeta, N->val); //it modifies each time the name of the file to etae created
+                sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/N_variabile/misure(eta=%.3f)_N=%.3f.txt", singoloeta, N->val); //it modifies each time the name of the file to etae created
                 misure[p]=fopen(filemisure, "w");
                 control_file(misure[p]);
 
