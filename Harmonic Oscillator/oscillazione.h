@@ -2,9 +2,9 @@
 #include<stdlib.h>
 #include<time.h>
 #include<math.h>
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/ran2.h"
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/usefulstuff.h"
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/listfunction.h"
+#include"/home/dario/Documents/UNI/Metodi/ran2.h"
+#include"//home/dario/Documents/UNI/Metodi/usefulstuff.h"
+#include"/home/dario/Documents/UNI/Metodi/listfunction.h"
 /* Programma per la simulazione dell'oscillatore armonico*/
 
 #define Nmax 10000000
@@ -13,7 +13,9 @@ long int seed = 13;
 float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta) 
 int iflag, measures, i_decorrel, i_term;  //vedi ising. i_term = passo di termalizzazione
 int npp[Nmax], nmm[Nmax]; //array per definire le posizioni dei primi vicini del lattice
-float field[Nmax];
+float field[Nmax];  //array in cui salviamo le Nlatt posizioni del percorso 
+int acc=0;  //intero che mi calcola quante volte ho accettato il metropolis, per poi calcolare l'accettanza
+
 
 
 /* per ogni coordinata definisco il passo in avanti o indietro con le opportune condizioni al bordo*/
@@ -74,8 +76,7 @@ void update_metropolis(float eta){
     int ip, im; //coordinate dei 2 primi vicini
     float force, phi, phi_prova;  //force = forza del campo intorno; phi = valore attuale del campo; phi_prova = valore di prova del campo
     float p_rat, x; // p_rat = valore di energia con cui confrontare x che è estratto a caso e mi dirà se accettare il passo o no
-    int var;
-
+    
     c1 = 1/eta;
     c2 = 1/eta + eta/2;
 
@@ -97,14 +98,12 @@ void update_metropolis(float eta){
         
         if(x<p_rat){
           field[i]=phi_prova;  //test accettanza, se p_rat>1 accetto
-          var=1;
+          acc++;
         }
-        else {
-            var=0;
-        }        
+        
     }
     
-    return;
+    return ;
 }
 
 //funzione che prende le misure delle osservabili che ci interessano
@@ -137,7 +136,7 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     int x; //per leggere l'init.txt; l è l'Nlatt che qui non serve a niente
     //OPERAZIONI PRELIMINARI
     float eta;
-    input = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/input.txt","r");
+    input = fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/input.txt","r");
     //printf("1\n");
     control_file(input);
     //printf("4\n");
@@ -168,6 +167,12 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     geometry();
     //printf("8\n");
     //SESSIONE ALL'EQUILIBRIO con MISURE
+
+    for (int i = 1; i<i_term+1; i++){
+        update_metropolis(eta);
+    }
+
+    acc=0;
     double obs[3]={0,0,0};
     for (int iter=0; iter<measures; iter++){
         // AGGIORNAMENTO CONFIGURAZIONE
@@ -190,7 +195,10 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
         fprintf(misure,"%lf  %lf %lf  %d\n", obs[0], obs[1], obs[2], iter); //prendo misure a questa configurazione
     }
 
+    float accettanza;
+    accettanza=acc*100/(measures*i_decorrel*(Nlatt-1));
 
+    printf("L'accettanza per delta=%f , eta=%f, Nlatt=%d è del %.0f percento\n", d_metro, eta, Nlatt, accettanza);
     //fclose(lat);
     fclose(input);
     return;
