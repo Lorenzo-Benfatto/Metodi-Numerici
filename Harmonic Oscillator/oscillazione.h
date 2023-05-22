@@ -14,7 +14,7 @@ float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = param
 int iflag, measures, i_decorrel, i_term;  //vedi ising. i_term = passo di termalizzazione
 int npp[Nmax], nmm[Nmax]; //array per definire le posizioni dei primi vicini del lattice
 float field[Nmax];  //array in cui salviamo le Nlatt posizioni del percorso 
-int acc=0;  //intero che mi calcola quante volte ho accettato il metropolis, per poi calcolare l'accettanza
+unsigned long acc=0;  //intero che mi calcola quante volte ho accettato il metropolis, per poi calcolare l'accettanza
 
 
 
@@ -156,11 +156,21 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     if(scelta==1){
         eta=y;
         Nlatt=primovalore/eta;
+        if(eta<0.05) d_metro=0.3;
+        else if(eta<0.09 && eta>=0.05) d_metro=0.5;
+        else if(eta>=0.09 && eta<0.15) d_metro=0.8;
+        else if(eta>=0.15) d_metro=1;
+        //d_metro=eta*20;
         Nlatt=(int)Nlatt;
+        
     }
     else {
         Nlatt=y;
         eta=primovalore;
+        if(eta<0.05) d_metro=0.3;
+        else if(eta<0.09 && eta>=0.05) d_metro=0.5;
+        else if(eta>=0.09 && eta<0.15) d_metro=0.8;
+        else if(eta>=0.15) d_metro=1;
     }
 
     initialize_lattice(iflag);
@@ -196,9 +206,13 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     }
 
     float accettanza;
-    accettanza=acc*100/(measures*i_decorrel*(Nlatt-1));
+    unsigned long num_updates;
+    num_updates=measures*i_decorrel*(Nlatt-2);
+    accettanza=(float)acc*100/num_updates;
 
-    printf("L'accettanza per delta=%f , eta=%f, Nlatt=%d è del %.0f percento\n", d_metro, eta, Nlatt, accettanza);
+    printf("\n \n");
+
+    printf("delta=%f, eta=%f, Nlatt=%d, accettanza=%.2f percento,\n numero di update = %lu, numero di accettati %lu\n", d_metro, eta, Nlatt, accettanza, num_updates, acc);
     //fclose(lat);
     fclose(input);
     return;
