@@ -3,11 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import os
+from uncertainties import ufloat
+
 
 ## Inizializzazione array
 eta = []
 y2 = []
 err_y2 = []
+Nlatt = []
 
 
 ## assegno cartella principale
@@ -32,14 +35,28 @@ directory = root_dir + f"{dir}/Bootstrap"
 ## iterate over files in that directory
 for filename in os.listdir(directory):
     f = os.path.join(directory, filename)
-    if f.find('DX2')!=-1:
+    if f.find('DX2')==-1:
         continue
     else:
         # i resampling sono scritti per riga. Leggo il valore di tutti i resampling del campo (è una matrice)
         x=np.loadtxt(f, unpack=False)
         print(f)
 
-        # salvataggio del valore di eta a partire dalla stringa
+        # salvataggio del valore di N a partire dalla stringa
+        inizio = f.find('N=') + 2
+        fine = inizio + 4
+        
+        # Ciclo per salvare i valori di N anche se hanno numero di cifre diverse
+        N = ''
+        string = f[inizio:fine]
+        for element in string:
+            if (element.isdigit() == True):         # controlla se l'elemento nella stringa è un numero
+                N = N + element
+   
+        N=float(N)
+        Nlatt = np.append(Nlatt, N)
+
+        # salvataggio del valore di N a partire dalla stringa
         inizio = f.find('eta=') + 4
         fine = inizio +5
 
@@ -51,7 +68,8 @@ for filename in os.listdir(directory):
         y2_media=np.mean(m_y2)     # media delle medie dei ricampionamenti a eta fisso (ovvero media di tutta la matrice)
         y2=np.append(y2,y2_media)     # array delle medie cambiando eta
 
-        erre = np.sqrt(2)*np.std(m_y2, ddof=1)    # errore sulla media di tutti i ricampionamenti a eta fisso
+        erre = np.std(m_y2, ddof=1)    # errore sulla media di tutti i ricampionamenti a eta fisso
+        print(erre)
 
         err_y2 = np.append(err_y2, erre)      # errore sulle medie al variare degli eta
 
@@ -59,16 +77,18 @@ for filename in os.listdir(directory):
 eta = np.array(eta)
 y2 = np.array(y2)
 err_y2 = np.array(err_y2)
+Nlatt = np.array(Nlatt)
+
 
 
 ## Fit del termine potenziale
 
 # Funzione di fit
 def f(x,a,b):
-    return a*x**2+b
+    return a*x**1/2+b
 
 # Valori iniziali
-init = (-0.65,0.5)
+init = (0.65,0.5)
 
 # Ciclo per minimizzare il ci quadro
 popt, pcov=curve_fit(f, eta, y2, init, err_y2)
@@ -101,22 +121,34 @@ print('\n\n\n')
 xx = np.linspace(min(eta), max(eta), 1000)
 
 
-# Figura
-plt.subplot(211)
-plt.title(r'OSCILLATORE ARMONICO \n Termine potenziale')
-plt.xlabel(r'$\eta$')
-plt.ylabel(r'$\frac{<y^2>}{2}$')
+# Plot del termine cinetico rinormalizzato
+partenza=2
+y2=y2[partenza:]
+eta=eta[partenza:]
+#print(f'Nlatt {Nlatt}')
+Nlatt=Nlatt[partenza:]
+err_y2=err_y2[partenza:]
 
-plt.plot( xx, f(xx, *popt), color='red')
+y2=-np.divide(y2, 2*eta**2)
+y2_norm = np.add(1/(2*eta), y2 )
+#print(Nlatt)
+
+
+# Figura
+plt.figure(1)
+plt.title('OSCILLATORE ARMONICO \n Termine cinetico')
+plt.xlabel(r'$\eta$')
+plt.ylabel(r'$\frac{<\Delta y^2>}{2}$')
+
+#plt.plot( xx, f(xx, *popt), color='red')
 plt.errorbar(eta, y2, err_y2, marker ='.', linestyle = '')
 plt.minorticks_on()
 
-# Residui normalizzati
-plt.subplot(212)
-r = (y2-f(eta,*popt))/dxy
-plt.errorbar( eta,r, linestyle='', marker='.')
-plt.title('Residui normalizzati')
+plt.figure(2)
+plt.title('OSCILLATORE ARMONICO \n Termine cinetico normalizzato')
 plt.xlabel(r'$\eta$')
-plt.ylabel('(dati - modello)/errore')
+plt.ylabel(r'$\frac{- <\Delta y^2>}{2 \eta^2} \eta^{N/2}$')
 
+plt.errorbar(eta, y2_norm, err_y2, marker ='.', linestyle = '')
+plt.minorticks_on()
 plt.show()
