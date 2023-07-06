@@ -108,7 +108,7 @@ directory = root_dir
 # ene_tot=np.add(dy2_norm,y2)
 # print(len(ene_tot))
 # #print(Nlatt)
-# ascissa=1/(eta*Nlatt)
+# ascissa=(eta*Nlatt)
 # print(len(ascissa))
 
 # # Figura
@@ -167,8 +167,11 @@ for filename in os.listdir(root_dir):
         eta=float(eta)
         
 ene = np.array(ene)
-err_ene = np.array(err_ene) 
-Nlatt_eta = 1/(np.array(Nlatt)*eta)
+ene = ene
+err_ene = np.array(err_ene)
+#err_ene = np.sqrt(err_ene**2+err_ene[len(ene)-1]**2) 
+#err_ene[len(ene)-1]=err_ene[len(ene)-1]/np.sqrt(2)
+Nlatt_eta = (np.array(Nlatt)*eta)
 
 ## GRAFICO E FIT DELL'ENERGIA IN FUNZIONE DI 1/BETA*OMEGA = 1/n*eta
 # Figura
@@ -178,18 +181,63 @@ plt.xlabel(r'$\frac{1}{\beta * \omega}$')
 plt.ylabel('U')
 
 #plt.plot( xx, f(xx, *popt), color='red')
-plt.errorbar(Nlatt_eta, ene, err_ene, marker ='.', linestyle = '')
+plt.errorbar(Nlatt_eta, ene, marker ='.', linestyle = '')
 plt.minorticks_on()
 
-'''
+# Funzione di fit
+def f(x,a):
+    return a+1/2+1/(np.exp(1/x)-1)
+
+# Valori iniziali
+init = (-50)
+
+# Ciclo per minimizzare il ci quadro
+popt, pcov=curve_fit(f, Nlatt_eta, ene, init, err_ene)
+
+
+ndof=len(Nlatt_eta)-1
+chi2=(((ene-f(Nlatt_eta, *popt))/err_ene)**2).sum()
+print('Passo zero')
+print('popt:', popt)
+print('dpopt:', np.sqrt(pcov.diagonal()))
+print('chi2=%f, \nndof=%f' %(chi2, ndof))
+dxy=err_ene
+dx = np.zeros(len(Nlatt_eta))
+for i in range(0, 3, 1):
+    dxy=np.sqrt(dxy**2+dx**2)
+    popt, pcov=curve_fit(f, Nlatt_eta, ene, popt, dxy)
+    chi2=(((ene-f(Nlatt_eta, *popt))/dxy)**2).sum()
+    print('Passo %d' % i)
+    print('popt:', popt)
+    print('dpopt:', np.sqrt(pcov.diagonal()))
+    print('chi2=%f, \nndof=%f' %(chi2, ndof))
+
+
+print('\n\n\n')
+
+
+## Grafico dell'energia potenziale bootstrappata in funzione del valore di eta
+
+# Dummy array per disegnare la funzione di plot
+xx = np.linspace(min(1/Nlatt_eta), 8, 1000)
+
+
+# Figura
+plt.subplot(211)
+plt.title('OSCILLATORE ARMONICO \n Energia totale nel limite al continuo')
+plt.xlabel(r'$\frac{1}{\eta N}$')
+plt.ylabel(r'E totale')
+
+plt.plot( xx, f(xx, *popt), color='red')
+plt.errorbar(1/Nlatt_eta, ene, err_ene, marker ='.', linestyle = '')
+plt.minorticks_on()
+
 # Residui normalizzati
 plt.subplot(212)
-r = (y2-f(eta,*popt))/dxy
-plt.errorbar( eta,r, linestyle='', marker='.')
+r = (ene-f(Nlatt_eta,*popt))/dxy
+plt.errorbar( 1/Nlatt_eta,r, linestyle='', marker='.')
 plt.title('Residui normalizzati')
-plt.xlabel(r'$\eta$')
+plt.xlabel(r'$\frac{1}{\eta N}$')
 plt.ylabel('(dati - modello)/errore')
 
-   
-'''
 plt.show()
