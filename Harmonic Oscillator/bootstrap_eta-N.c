@@ -11,9 +11,9 @@
 
 int N_misure; //N = numero di misure----> lo leggo da file 
 
-void bootstrap(FILE *f, char dir[50], float e, int enne, int scelta){
+void bootstrap(FILE *f, char dir[70], float e, int enne, int scelta){
     printf("eta = %f\n", e);
-    FILE *x2 ,*dx2, *ene;
+    FILE *x2 ,*dx2, *ene, *ipsilon;
     unsigned long s; //serve per salvarsi il numero casuale enorme che produco
     int i=0,j,k,M=100,x,bin=100,taglio=0;         /*M = numero di resampling, 
     x serve per scanfare i file, i e j indici ricorsivi, bin è il bin del bootstrap, 
@@ -25,16 +25,19 @@ void bootstrap(FILE *f, char dir[50], float e, int enne, int scelta){
     float *dati_x2 = malloc(sizeof(long double) * (N_misure-taglio));
     float *dati_dx2 = malloc(sizeof(long double) * (N_misure-taglio));
     float *dati_ene = malloc(sizeof(long double) * (N_misure-taglio));
-    
+    float *dati_y = malloc(sizeof(long double) * (N_misure-taglio));
 
     x=fscanf(f, "%f  %f  %f  %d", &ics2, &dics2, &fild, /*&cinetica,*/ &iter);
+
     while (x!=EOF){
             dati_x2[i]=ics2;
             dati_dx2[i]=dics2;
-            if(scelta!=1) dati_ene[i]=ics2/2 - dics2/(2*pow(e,2)) + 1/(2*e);
+            dati_y[i]=fild;
+            if(scelta!=1) dati_ene[i]=ics2/2 - dics2/(2*pow(e,2));
             x=fscanf(f, "%f  %f  %f  %d", &ics2, &dics2, &fild, /*&cinetica,*/ &iter);
             i++;
         }
+    printf("ok\n");
     /* Questo file va aperto quando sappiamo già il valore di beta*/
     char filemisure[700];
     sprintf(filemisure,"/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/%s/Bootstrap/resample_binned_X2(eta=%.3f,N=%d).txt", dir, e, enne);
@@ -44,11 +47,16 @@ void bootstrap(FILE *f, char dir[50], float e, int enne, int scelta){
     sprintf(filemisure,"/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/%s/Bootstrap/resample_binned_DX2(eta=%.3f,N=%d).txt",dir, e, enne);
     dx2=fopen(filemisure,"w");
     control_file(dx2);
+
     if(scelta!=1){
         sprintf(filemisure,"/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/%s/Bootstrap/resample_binned_energy(eta=%.3f,N=%d).txt",dir, e, enne);
         ene=fopen(filemisure,"w");
         control_file(ene);
     }
+
+    sprintf(filemisure,"/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/%s/Bootstrap/resample_binned_Y(eta=%.3f,N=%d).txt", dir, e, enne);
+    ipsilon=fopen(filemisure,"w");
+    control_file(ipsilon);
     
 
     for(j=0;j<M;j++){
@@ -64,12 +72,14 @@ void bootstrap(FILE *f, char dir[50], float e, int enne, int scelta){
                 if(s+h>N_misure-1){
                     fprintf(x2,"%lf ",dati_x2[s+h+1-N_misure]);
                     fprintf(dx2,"%lf ",dati_dx2[s+h+1-N_misure]);
+                    fprintf(ipsilon,"%lf ",dati_y[s+h+1-N_misure]);
                     if (scelta!=1) fprintf(ene,"%lf ",dati_ene[s+h+1-N_misure]);
                  //printf("sono dentro il primo if \n");
                 }
                 if(s+h<=N_misure-1){
                     fprintf(x2,"%lf ",dati_x2[s+h]);
                     fprintf(dx2,"%lf ",dati_dx2[s+h]);
+                    fprintf(ipsilon,"%lf ",dati_y[s+h]);
                     if(scelta!=1) fprintf(ene,"%lf ",dati_ene[s+h]);
                  //printf("sono dentro il secondo if \n");
                 }
@@ -78,6 +88,7 @@ void bootstrap(FILE *f, char dir[50], float e, int enne, int scelta){
         }
             fprintf(x2,"\n");
             fprintf(dx2,"\n");
+            fprintf(ipsilon,"\n");
             if(scelta!=1)fprintf(ene,"\n");
         }
     
@@ -85,8 +96,10 @@ void bootstrap(FILE *f, char dir[50], float e, int enne, int scelta){
     free(dati_x2);
     free(dati_dx2);
     free(dati_ene);
+    free(dati_y);
     fclose(x2);
     fclose(dx2);
+    fclose(ipsilon);
     if(scelta!=1)fclose(ene);
     return;
 }
@@ -117,7 +130,7 @@ int main(){
     int p=0, L;         // p serve per scorrere il file degli eta e L è la lunghezza dell'array degli eta. 
     float ennepereta;   //è il prodotto di lunghezza path per valore di eta, è costante nel limite al continuo e sarà il primo elemento del file valori.txt nel caso 1
     float singoloeta;   //primo elemento del file valori.txt nel caso scelta = 0, eta fisso al variare degli N
-    char dir[50];
+    char dir[70];
     
 
     list *eta=NULL;           // lista contenente i valori degli eta, letti da file, per caso scela=1
@@ -147,15 +160,15 @@ int main(){
         FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun eta
         while(eta!=NULL){
             printf("Sono nel ciclo %d \n",p);
-            char filemisure[500];
+            char filemisure[700];
             float penne;
             penne=ennepereta/(eta->val);
             int enne;
             enne=(int)penne;
-            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/Eta/misure(N=%d)_eta=%.3f.txt", enne, eta->val); //it modifies each time the name of the file to etae created
+            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/N_ETA_fisso/N_Eta=%.0f/misure(N=%d)_eta=%.3f.txt", ennepereta,enne, eta->val); //it modifies each time the name of the file to etae created
             misure[p]=fopen(filemisure, "r");
             control_file(misure[p]);
-            sprintf(dir,"Eta");
+            sprintf(dir,"N_ETA_fisso/N_Eta=%.0f",ennepereta);
             printf("sono nella cartella %s \n", dir);
             bootstrap(misure[p], dir, eta->val, enne, scelta);
 
@@ -168,7 +181,7 @@ int main(){
         }
     }
 
-
+//CIao
 // DOPO C'è DA METTERE SCELTA TRA LE OPZIONI DI HARMONIC_OSCILLATOR E FARGLI FARE COSE DIVERSE
 
 
