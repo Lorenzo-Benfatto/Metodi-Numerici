@@ -9,7 +9,7 @@
 
 #define Nmax 10000000
 int Nlatt;
-long int seed = 13;
+long int seed = 23456789;
 float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta) 
 int iflag, measures, i_decorrel, i_term;  //vedi ising. i_term = passo di termalizzazione
 int npp[Nmax], nmm[Nmax]; //array per definire le posizioni dei primi vicini del lattice
@@ -84,7 +84,7 @@ void update_metropolis(float eta){
     iterativa su tutti i siti, si può dimostrare che va bene lo stesso per il bilancio dettagliato, 
     ma meno banale da provare*/
     
-    for(int i = 1; i<Nlatt-1; i++){
+    for(int i = 0; i<Nlatt; i++){
         ip = npp[i];
         im = nmm[i];
         force = field[ip] + field[im];
@@ -154,13 +154,13 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     //////////////////////////////////////////////////////////////
 
     if(scelta==1){
-        eta=y;
-        Nlatt=primovalore/eta;
+        Nlatt=y;
+        eta=primovalore/Nlatt;
         if(eta<0.05) d_metro=0.3;
         else if(eta<0.09 && eta>=0.05) d_metro=0.5;
         else if(eta>=0.09 && eta<0.15) d_metro=0.8;
-        else if(eta>=0.15) d_metro=1;
-        //d_metro=eta*20;
+        else if(eta>=0.15 && eta<0.45) d_metro=1;
+        else if(eta>=0.45) d_metro=3;
         Nlatt=(int)Nlatt;
         
     }
@@ -170,7 +170,8 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
         if(eta<0.05) d_metro=0.3;
         else if(eta<0.09 && eta>=0.05) d_metro=0.5;
         else if(eta>=0.09 && eta<0.15) d_metro=0.8;
-        else if(eta>=0.15) d_metro=1;
+        else if(eta>=0.15 && eta<0.45) d_metro=1;
+        else if(eta>=0.45) d_metro=3;
     }
 
     initialize_lattice(iflag);
@@ -202,7 +203,7 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
         obs[1] = measure(obs)[1];
         obs[2] = measure(obs)[2];
         //printf("%lf  %lf  %d\n", obs[0], obs[1], iter);
-        fprintf(misure,"%lf  %lf %lf  %d\n", obs[0], obs[1], obs[2], iter); //prendo misure a questa configurazione
+        fprintf(misure,"%lf %lf %lf %d\n", obs[0], obs[1], obs[2], iter); //prendo misure a questa configurazione
     }
 
     float accettanza;
