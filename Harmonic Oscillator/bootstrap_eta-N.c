@@ -33,7 +33,7 @@ void bootstrap(FILE *f, char dir[70], float e, int enne, int scelta){
             dati_x2[i]=ics2;
             dati_dx2[i]=dics2;
             dati_y[i]=fild;
-            if(scelta!=1) dati_ene[i]=ics2/2 - dics2/(2*pow(e,2));
+            if(scelta!=1) dati_ene[i]=ics2 - dics2/(pow(e,2));
             x=fscanf(f, "%f  %f  %f  %d", &ics2, &dics2, &fild, /*&cinetica,*/ &iter);
             i++;
         }
@@ -127,13 +127,13 @@ int main(){
     char path[500];
 
     FILE *f;         // puntatore al file degli eta
-    int p=0, L;         // p serve per scorrere il file degli eta e L è la lunghezza dell'array degli eta. 
+    int p=0, L;         // p serve per scorrere il file degli eta e L è la lunghezza dell'array degli Nlatt. 
     float ennepereta;   //è il prodotto di lunghezza path per valore di eta, è costante nel limite al continuo e sarà il primo elemento del file valori.txt nel caso 1
     float singoloeta;   //primo elemento del file valori.txt nel caso scelta = 0, eta fisso al variare degli N
     char dir[70];
     
 
-    list *eta=NULL;           // lista contenente i valori degli eta, letti da file, per caso scela=1
+    list *Nlatt=NULL;           // lista contenente i valori degli eta, letti da file, per caso scela=1
     list *N=NULL;              // lista contenente i valori degli N, letti da file, per caso scela=0
     
     
@@ -152,31 +152,31 @@ int main(){
         printf("############################################################# \n");
         f=fopen("/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/valori_eta.txt","r");  //leggo il file valori.txt
         control_file(f);
-        eta = scan_file(f,eta);         // lettura degli valori degli eta, con funzione ("listfunction.h")
-        L=count(eta)-1;         // funzione che conta la lunghezza di una lista ("listfunction.h")
-        ennepereta = val_posizione(0,eta);
-        eta = move_to_position(1,eta);
+        Nlatt = scan_file(f,Nlatt);         // lettura degli valori degli eta, con funzione ("listfunction.h")
+        L=count(Nlatt)-1;         // funzione che conta la lunghezza di una lista ("listfunction.h")
+        ennepereta = val_posizione(0,Nlatt);
+        Nlatt = move_to_position(1,Nlatt);
 
         FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun eta
-        while(eta!=NULL){
+        while(Nlatt!=NULL){
             printf("Sono nel ciclo %d \n",p);
             char filemisure[700];
-            float penne;
-            penne=ennepereta/(eta->val);
-            int enne;
-            enne=(int)penne;
-            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/N_ETA_fisso/N_Eta=%.0f/misure(N=%d)_eta=%.3f.txt", ennepereta,enne, eta->val); //it modifies each time the name of the file to etae created
+            float eta;
+            eta=ennepereta/(Nlatt->val);
+            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo2/Oscillatore/N_ETA_fisso/N_Eta=%.0f/misure(N=%.0f)_eta=%.3f.txt", ennepereta,Nlatt->val, eta); //it modifies each time the name of the file to etae created
             misure[p]=fopen(filemisure, "r");
             control_file(misure[p]);
             sprintf(dir,"N_ETA_fisso/N_Eta=%.0f",ennepereta);
             printf("sono nella cartella %s \n", dir);
-            bootstrap(misure[p], dir, eta->val, enne, scelta);
+            int ennelatt;
+            ennelatt=(int)Nlatt->val;
+            bootstrap(misure[p], dir, eta, ennelatt, scelta);
 
-            printf("Ho letto il valore %f\n", eta->val);     
+            printf("Ho letto il valore %f\n", Nlatt->val);     
 
             fclose(misure[p]);
             printf("chiuso misure\n");
-            eta=eta->next;
+            Nlatt=Nlatt->next;
             p++;
         }
     }
