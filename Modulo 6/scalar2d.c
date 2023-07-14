@@ -15,8 +15,6 @@ int main(void){
     float m;  //gli assegnerò il valore della massa nel caso scelta=1, quando la massa non è fissa
     int Nx;     //gli assegnerò il valore della Nx ricavato a partire da Nt e m letti da file
 
-    list *Nt=NULL;           // lista contenente i valori degli Nt, letti da file
-    
     char valori[300];
     printf("######################################################## \n");
     printf("Per simulare il limite al continuo (nt*m, ns*m fisso) digiti 1\n");
@@ -31,20 +29,25 @@ int main(void){
     scanf("%d", &scelta);       //scegli quale simulazione fare digitando da tastiera
 
     sprintf(valori,"/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/valori.txt"); //file degli Nt
-    f=fopen(valori,"r");
-    control_file(f);
-
-    Nt = scan_file(f,Nt);         // lettura degli valori degli nt, con funzione ("listfunction.h")
-    L=count(Nt)-3;         // funzione che conta la lunghezza di una lista ("listfunction.h")
-    Ntm = val_posizione(0,Nt);
-    Nxm = val_posizione(1,Nt);
-    singolom = val_posizione(2,Nt);
-    Nt = move_to_position(3,Nt);  //da qui in poi i valori della lista sono solo Nt
+    
 
     if(scelta==1 || scelta==2){
         printf("############################################################# \n");
         printf("Ha scelto di simulare il limite al continuo, buona giornata\n");
         printf("############################################################# \n");
+
+        f=fopen(valori,"r");
+        control_file(f);
+
+        list *Nt=NULL;           // lista contenente i valori degli Nt, letti da file
+    
+
+        Nt = scan_file(f,Nt);         // lettura degli valori degli nt, con funzione ("listfunction.h")
+        L=count(Nt)-3;         // funzione che conta la lunghezza di una lista ("listfunction.h")
+        Ntm = val_posizione(0,Nt);
+        Nxm = val_posizione(1,Nt);
+        singolom = val_posizione(2,Nt);
+        Nt = move_to_position(3,Nt);  //da qui in poi i valori della lista sono solo Nt
         
         FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun Nt
 
@@ -69,6 +72,7 @@ int main(void){
             Nt=Nt->next;
             p++;
         }
+        fclose(f);
     }
 
 
@@ -80,35 +84,42 @@ int main(void){
         printf("Ha scelto di variare la temperatura, buona giornata\n");
         printf("######################################################## \n");
 
-        list *Nt2=NULL;
-        Nt2=scan_file(f,Nt2);
-        Nt2=move_to_position(3,Nt2);
+        f=fopen(valori,"r");
+        control_file(f);
+        list *Nt=NULL;
+        Nt = scan_file(f,Nt);         // lettura degli valori degli nt, con funzione ("listfunction.h")
+        L=count(Nt)-3;         // funzione che conta la lunghezza di una lista ("listfunction.h")
+        Ntm = val_posizione(0,Nt);
+        Nxm = val_posizione(1,Nt);
+        singolom = val_posizione(2,Nt);
+        Nt = move_to_position(3,Nt);  //da qui in poi i valori della lista sono solo Nt
+
         FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun eta
-        while(Nt2!=NULL){
-            Nx = Nt2->val;
+        while(Nt!=NULL){
+            Nx = Nt->val;
             char filemisure[500];
-            Ntm = Nt2->val * singolom;
+            Ntm = Nt->val * singolom;
             Nxm = Ntm;
-            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/Temperatura/misure(Ntm=%.0f,Nxm=%.0f,Nt=%.0f,Nx=%d,m=%.3f).txt", Ntm, Nxm,Nt2->val, Nx, singolom); //it modifies each time the name of the file to etae created
+            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/Temperatura/misure(Ntm=%.0f,Nxm=%.0f,Nt=%.0f,Nx=%d,m=%.3f).txt", Ntm, Nxm,Nt->val, Nx, singolom); //it modifies each time the name of the file to etae created
             misure[p]=fopen(filemisure, "w");
             control_file(misure[p]);
 
-            Scalar_2D(misure[p], Nt2->val, Nt2->val, singolom); 
+            Scalar_2D(misure[p], Nt->val, Nt->val, singolom); 
              /*eseguo la simulazione per il valore di eta in causa. 
             Funzione di oscillazione.h Mi creerà automaticamente un file di misure contenente i valori delle osservabili che
             ci interessano (y^2medio, Dy^2medio, ymedio) e eta associato per ogni misura fatta. */
-            printf("Ho terminato il valore %f\n", Nt2->val);
+            printf("Ho terminato il valore %f\n", Nt->val);
 
             fclose(misure[p]);
-            Nt2=Nt2->next;
+            Nt=Nt->next;
             p++;
-        }       
+        } 
+        fclose(f);      
     }
 
 
     printf("############################################################# \n");
     printf("Ci auguriamo sia stata una piacevole esperienza, arrivederci!\n");
     printf("############################################################# \n");
-    fclose(f);
     return 0;
 }
