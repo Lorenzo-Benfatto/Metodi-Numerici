@@ -1,258 +1,114 @@
-/* CC    per far girare il codice dopo averlo compilato, e` necessario che
-CC    esista un file "input" contenente i 5 numeri (3 interi e 2 reali) letti
-CC    poche righe piu` sotto, ed un file "randomseed" contenente lo stato
-CC    precedente del generatore random oppure il nuovo seme
-CC    (un numero intero qualsiasi)
+#include "/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/scalar2d.h"
 
-CC    inoltre se si mette come "iflag" di partenza un numero che non sia
-CC    0 o 1, prova a leggere la configurazione di spin dal file "lattice"
-CC    che quindi deve gia` esistere */
+/* IN QUESTO CODICE VIENE ESEGUITA LA SIMULAZIONE MONTECARLO PER VARI VALORI DI Nt, RIPORTATI NEL FILE "valori.txt". 
+PER OGNI VALORE NEL FILE "misure(....).txt" SONO RIPORTATE LE MEDIE del termine di massa, termine cinetico spaziale, 
+termine cinetico temporale PER CIASCUN VALORE DI Nt */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <math.h>
-#include <errno.h>
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/usefulstuff.h"
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/ran2.h"
-#include"/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-3/Nuova_run/listfunction.h"
+/*il numero di misure è nel file input.txt, che verrà letto in scalar2d.h*/
 
 
-/* VARIABILI MACRO */
-#define nx 40
-#define nt 8
-#define _USE_MATH_DEFINES
+int main(void){
+    FILE *f;         // puntatore al file degli Nt
+    int p=0, L;         // p serve per scorrere il file degli eta e L è la lunghezza dell'array degli Nt . 
+    float Ntm, Nxm;        //sono i primi due valori del file scanfato e sono Nt * m e Ns * m
+    float singolom; // valore che leggo come terzo elem del file scanfato, serve solo nel caso di variazione di temperatura
+    float m;  //gli assegnerò il valore della massa nel caso scelta=1, quando la massa non è fissa
+    int Nx;     //gli assegnerò il valore della Nx ricavato a partire da Nt e m letti da file
 
-
-/* VARIABILI GLOBALI */
-float xene_mass = 0, xene_spat = 0, xene_temp = 0;
-int nvol = nx*nt, nlatt = nx;
-float mass, extfield, mass2, mass2p4;
-float field[nx][nt];
-int npp[nx][2], nmm[nx][2];
-
-
-int i_flag, i_decorrel, measures;
-long int seed = 43456789;
-
-void geometry(){
+    list *Nt=NULL;           // lista contenente i valori degli Nt, letti da file
     
-/* !! le funzioni npp ed nmm sono costruite come dei vettori
-!! di interi, in modo da non essere ricalcolate ogni volta
-!! e rendere tutto piu` efficiente, prendono in input una
-!! coordinata e restituiscono la coordinata in avanti o
-!! indietro, tenendo conto delle opportune condizioni
+    char valori[300];
+    printf("######################################################## \n");
+    printf("Per simulare il limite al continuo (nt*m, ns*m fisso) digiti 1\n");
+    printf("######################################################## \n");
+    printf("Per simulare la variazione di temperatura (Nt variabile, m fisso) digiti 0\n");
+    printf("######################################################## \n");
+    printf("######################################################## \n");
+    printf("Per simulare entrambe digiti 2\n");
+    printf("######################################################## \n");
 
-!! le direzioni possono avere lunghezze diverse quindi mi servono
-!! 2 tabelle diverse */
-    
-    for(int i = 0; i<nx; i++){
-        npp[i][0] = i+1;
-        nmm[i][0] = i-1;
-    }
-    
-    npp[nx-1][0] = 0;             // RIAGGIUSTO IL CALCOLO AI BORDI PER TENERE
-    nmm[0][0] = nx-1;             // CONTO DELLE CONDIZIONI AL BORDO PERIODICHE
-    
-    for(int i = 0; i<nt; i++){
-        npp[i][1] = i+1;
-        nmm[i][1] = i-1;
-    }
-    
-    npp[nt-1][1] = 0;             // RIAGGIUSTO IL CALCOLO AI BORDI PER TENERE
-    nmm[0][1] = nt-1;             // CONTO DELLE CONDIZIONI AL BORDO PERIODICHE
-    
-    return;
-    
-}
+    int scelta; 
+    scanf("%d", &scelta);       //scegli quale simulazione fare digitando da tastiera
 
+    sprintf(valori,"/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/valori.txt"); //file degli Nt
+    f=fopen(valori,"r");
+    control_file(f);
 
-void initialize_lattice(int iflag){
-    
-    //ASSEGNO LA CONFIGURAZIONE DI PARTENZA DELLA CATENA DI MARKOV
-    float x;
-    
-    // PARTENZA A FREDDO (tutti gli spin a 1, o -1, come se fosse T = 0)
-    if(iflag == 0){
-        for(int ix = 0; ix<nx; ix++){
-            for(int it = 0; it<nt; it++){
-                
-                field[ix][it] = 0;
-            }
-            
+    Nt = scan_file(f,Nt);         // lettura degli valori degli nt, con funzione ("listfunction.h")
+    L=count(Nt)-3;         // funzione che conta la lunghezza di una lista ("listfunction.h")
+    Ntm = val_posizione(0,Nt);
+    Nxm = val_posizione(1,Nt);
+    singolom = val_posizione(2,Nt);
+    Nt = move_to_position(3,Nt);  //da qui in poi i valori della lista sono solo Nt
+
+    if(scelta==1 || scelta==2){
+        printf("############################################################# \n");
+        printf("Ha scelto di simulare il limite al continuo, buona giornata\n");
+        printf("############################################################# \n");
+        
+        FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun Nt
+
+        while(Nt!=NULL){
+            char filemisure[500];
+            //ricavo valore della massa e dell?'Nx da Ntm e Nt
+            m=Ntm/(Nt->val);   
+            Nx = (int)(Nxm/m);
+
+            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/Continuo/misure(Ntm=%.0f,Nxm=%.0f,Nt=%.0f,Nx=%d,m=%.3f).txt", Ntm, Nxm, Nt->val, Nx, m); //it modifies each time the name of the file to etae created
+            misure[p]=fopen(filemisure, "w");
+            control_file(misure[p]);
+
+            Scalar_2D(misure[p], Nt->val, Nx, m); 
+             /*eseguo la simulazione per il valore di nt in causa. 
+            Funzione di scalar2d.h Mi creerà automaticamente un file di misure contenente i valori delle osservabili che
+            ci interessano e associato per ogni misura fatta. */
+     
+            printf("Ho terminato il valore %f\n", Nt->val);     
+
+            fclose(misure[p]);
+            Nt=Nt->next;
+            p++;
         }
     }
-    // PARTENZA A CALDO (spin random, come se fosse T = infinito)
-    if(iflag == 1){
-        for(int ix = 0; ix<nx; ix++){
-            for(int it = 0; it<nt; it++){
-                //float x;
-                //seed = i;
-                x = 1-2*ran2(&seed);
-                printf("%lf", x);
-                field[ix][it] = x;
-                //printf("%f\n", field[i]);
-                
-            }
-        }
+
+
+//Questo secondo caso è analogo al primo solo che uso un nome diverso per il puntatore a lista perché nel 
+//caso in cui scelga di fare entrambe le simulazioni altrimenti la lista parte da NULL e non gli piace
+
+    if (scelta == 0 || scelta == 2){
+        printf("######################################################## \n");
+        printf("Ha scelto di variare la temperatura, buona giornata\n");
+        printf("######################################################## \n");
+
+        list *Nt2=NULL;
+        Nt2=scan_file(f,Nt2);
+        Nt2=move_to_position(3,Nt2);
+        FILE *misure[L];          // puntatore per i file che salvano gli obs, per ciascun eta
+        while(Nt2!=NULL){
+            Nx = Nt2->val;
+            char filemisure[500];
+            Ntm = Nt2->val * singolom;
+            Nxm = Ntm;
+            sprintf(filemisure, "/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/Temperatura/misure(Ntm=%.0f,Nxm=%.0f,Nt=%.0f,Nx=%d,m=%.3f).txt", Ntm, Nxm,Nt2->val, Nx, singolom); //it modifies each time the name of the file to etae created
+            misure[p]=fopen(filemisure, "w");
+            control_file(misure[p]);
+
+            Scalar_2D(misure[p], Nt2->val, Nt2->val, singolom); 
+             /*eseguo la simulazione per il valore di eta in causa. 
+            Funzione di oscillazione.h Mi creerà automaticamente un file di misure contenente i valori delle osservabili che
+            ci interessano (y^2medio, Dy^2medio, ymedio) e eta associato per ogni misura fatta. */
+            printf("Ho terminato il valore %f\n", Nt2->val);
+
+            fclose(misure[p]);
+            Nt2=Nt2->next;
+            p++;
+        }       
     }
-    
-    // AGGIUNGERE IF PER RIPARTIRE DALLA CONFIGURAZIONE PRECEDENTE
-
-    return;
-    
-}
-
-void energy(){
-
-     xene_mass = 0;
-     xene_spat = 0;
-     xene_temp = 0;
-    
-    float force_s, force_t, phi;
-    
-    // Loop su tutti i siti del reticolo
-    for(int ix = 0; ix<nx; ix++){
-        for(int it = 0; it<nt; it++){
-            
-            phi = field[ix][it];
-            force_s = field[npp[ix][0]][it];
-            force_t = field[ix][npp[it][1]];
-            
-            xene_mass = xene_mass + mass2*pow(phi,2);
-            xene_spat = xene_spat - 2*phi*force_s + 2*pow(phi,2);
-            xene_temp = xene_temp - 2*phi*force_t + 2*pow(phi,2);
-            
-        }
-    }
-    float Vol;
-    Vol=(float)nvol;
-    xene_mass = xene_mass/Vol;   // normalizzo -> densita` di energia
-    xene_spat = xene_spat/Vol;   // normalizzo -> densita` di energia
-    xene_temp = xene_temp/Vol;  // normalizzo -> densita` di energia
-
-    return;
-    
-}
 
 
-void update_heatbath(){
-    
-    float force, sigma2, y, x, aver, phi;
-    
-    for(int ix = 0; ix<nx; ix++){
-        for(int it = 0; it<nt; it++){
-            
-            aver=0;
-            force = 0;
-            phi = field[ix][it];
-            force   = force   + field[npp[ix][0]][it];
-            force   = force   + field[nmm[ix][0]][it];
-            force   = force   + field[ix][npp[it][1]];
-            force   = force   + field[ix][nmm[it][1]];
-            
-            sigma2 = 1/mass2p4;  // variance of the gaussian distribution
-                                                   //is 1/(m^2 + 4)
-
-            aver = force*sigma2;   // average of the gaussian distribution
-                                                   // is force/(m^2 + 4)
-                             
- //            write(*,*) mass2p4, aver, force
-            x = sqrt(sigma2)*sqrt(-2*log(ran2(&seed))); //
-            y = x*cos(2*M_PI*ran2(&seed)) + aver ; //  BOX MULLER ALGORITHM
- //           y = x*cos(2*M_PI*ran2(&seed));
-
-            // Mi riscrivo il Box perchè non mi fido
-
-//            x=sqrt(2*sigma2)*sqrt(-log(1-ran2(&seed)));
-//            y=x*cos(2*M_PI*ran2(&seed))+aver;
-
-                
-            field[ix][it] = y; //
-  //          printf("%lf \n", field[ix][it]);
-            
-        }
-    }
-    
-    return;
-}
-
-
-void update_overrelax(){
-    
-    float force, phi, aver;
-        
-    for(int ix = 0; ix<nx; ix++){
-        for(int it = 0; it<nt; it++){
-            
-            force = 0;
-            phi = field[ix][it];
-            force   = force   + field[npp[ix][0]][it];
-            force   = force   + field[nmm[ix][0]][it];
-            force   = force   + field[ix][npp[it][1]];
-            force   = force   + field[ix][nmm[it][1]];
-            
-            aver = force/mass2p4;  // average of the gaussian distribution
-                                                   // is force/(m^2 + 4)
-                             
-            field[ix][it] = 2*aver - phi;
-            
-            
-        }
-    }
-    
-    return;
-}
-
-int main(){
-    
-    FILE *input, *mis;
-    int x;
-    int iter=0;
-    
-
-//  apertura file da dove leggere i parametri della simulazione
-    input = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-6/Run/input.txt","r");
-
-    control_file(input);
-    printf("ciao_input\n");
-    
-    x= fscanf(input, "%d  %d  %d  %f  %f", &i_flag, &measures, &i_decorrel, &extfield, &mass);
-    //  apertura file sul quale scrivere le misure della magnetizzazione
-    mis = fopen("/mnt/c/Users/aministratore/Documents/Università/Magistrale/Metodi Numerici/Modulo-6/Run/dati.txt","w");
-
-    control_file(mis);
-    printf("ciao_mis\n");
-    
-    mass2   = pow(mass,2);
-    mass2p4 = pow(mass,2) + 4;
-    
-    
-    geometry();
-    initialize_lattice(i_flag);
-    
-    for(iter = 0; iter<measures; iter++){
-        
-        // AGGIORNAMENTO CONFIGURAZIONE: i_decorrel spazzate di tutto il reticolo
-        for(int j = 0; j<i_decorrel; j++){
-            
-            update_heatbath();
-            update_overrelax();
-            update_overrelax();
-            update_overrelax();
-            update_overrelax();
-        }
-        
-        
-        //   MISURA DELLE OSSERVABILI FISICHE
-        energy();  // xene mass
-
-        
-        fprintf(mis,"%d   %lf    %lf   %lf\n", iter, xene_mass, xene_spat, xene_temp); //prendo misure a questa configurazione
-    }
-        
+    printf("############################################################# \n");
+    printf("Ci auguriamo sia stata una piacevole esperienza, arrivederci!\n");
+    printf("############################################################# \n");
+    fclose(f);
     return 0;
 }
