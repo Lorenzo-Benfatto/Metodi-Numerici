@@ -27,15 +27,14 @@ CC    che quindi deve gia` esistere */
 
 
 /* VARIABILI GLOBALI */
-float xene_mass, xene_spat, xene_temp;
+float xene_mass = 0, xene_spat = 0, xene_temp = 0, xene_density=0;
 int nx, nt;
-float mass, extfield, mass2, mass2p4, xene_density;
+float mass, extfield, mass2, mass2p4;
 float field[Nlatt][Nlatt];
 int npp[Nlatt][2], nmm[Nlatt][2];
 
 
 int i_flag, i_decorrel, measures;
-
 long int seed = 43456789;
 
 void geometry(){
@@ -92,7 +91,7 @@ void initialize_lattice(int iflag){
                 //float x;
                 //seed = i;
                 x = 1-2*ran2(&seed);
-                printf("%lf", x);
+                //printf("%lf", x);
                 field[ix][it] = x;
                 //printf("%f\n", field[i]);
                 
@@ -107,13 +106,15 @@ void initialize_lattice(int iflag){
 }
 
 void energy(){
-    int nvol = nx*nt;
-    
-    float force_s, force_t, phi;
+    int nvol =nx*nt;
+
     xene_mass = 0;
     xene_spat = 0;
     xene_temp = 0;
     xene_density = 0;
+    
+    float force_s, force_t, phi;
+    
     // Loop su tutti i siti del reticolo
     for(int ix = 0; ix<nx; ix++){
         for(int it = 0; it<nt; it++){
@@ -122,17 +123,20 @@ void energy(){
             force_s = field[npp[ix][0]][it];
             force_t = field[ix][npp[it][1]];
             
-            xene_mass = xene_mass + mass2*pow(phi,2);
-            xene_spat = xene_spat - 2.0*phi*force_s + 2.0*pow(phi,2);
-            xene_temp = xene_temp  - 2.0*phi*force_t + 2.0*pow(phi,2);
-            
+            xene_mass = xene_mass + mass2*phi*phi; //pow(phi,2);
+            xene_spat = xene_spat - 2*phi*force_s + 2*phi*phi; //*pow(phi,2);
+            xene_temp = xene_temp - 2*phi*force_t + 2*phi*phi; //pow(phi,2);
         }
     }
-    xene_density = xene_mass + xene_spat - xene_temp;
-    xene_density = (pow(nt,2)/2)*(xene_density/nvol);  // densità di energia totale
-    xene_mass = xene_mass/nvol;   // normalizzo -> densita` di energia: termine di massa
-    xene_spat = xene_spat/nvol;   // normalizzo -> densita` di energia: termine cinetico spaziale
-    xene_temp = xene_temp/nvol;  // normalizzo -> densita` di energia: termine cinetico temporale
+    float Vol;
+    Vol=(float)nvol;
+    xene_mass = xene_mass/Vol;   // normalizzo -> densita` di energia massa
+    xene_spat = xene_spat/Vol;   // normalizzo -> densita` di energia potenziale
+    xene_temp = xene_temp/Vol;  // normalizzo -> densita` di energia cinetica
+    xene_density= (xene_mass + xene_spat - xene_temp);
+
+
+// differenza tra le osservabili
 
     return;
     
@@ -145,6 +149,7 @@ void update_heatbath(){
     
     for(int ix = 0; ix<nx; ix++){
         for(int it = 0; it<nt; it++){
+            
             aver=0;
             force = 0;
             phi = field[ix][it];
@@ -153,15 +158,18 @@ void update_heatbath(){
             force   = force   + field[ix][npp[it][1]];
             force   = force   + field[ix][nmm[it][1]];
             
-            sigma2 = 1.0/mass2p4;  // variance of the gaussian distribution
+            sigma2 = 1/mass2p4;  // variance of the gaussian distribution
                                                    //is 1/(m^2 + 4)
+
             aver = force*sigma2;   // average of the gaussian distribution
                                                    // is force/(m^2 + 4)
-            //printf("%lf", aver);                 
+                             
  //            write(*,*) mass2p4, aver, force
-            x = sqrt(sigma2)*sqrt(-2.0*log(ran2(&seed))); //
-            y = x*cos(2.0*M_PI*ran2(&seed)) + aver ; //  BOX MULLER ALGORITHM
-            field[ix][it] = y; //
+            x = sqrt(sigma2)*sqrt(-2*log(ran2(&seed))); //
+            y = x*cos(2*M_PI*ran2(&seed)) + aver ; //  BOX MULLER ALGORITHM
+
+                
+            field[ix][it] = y;
             
         }
     }
@@ -187,7 +195,7 @@ void update_overrelax(){
             aver = force/mass2p4;  // average of the gaussian distribution
                                                    // is force/(m^2 + 4)
                              
-            field[ix][it] = 2.0*aver - phi;
+            field[ix][it] = 2*aver - phi;
             
             
         }
@@ -196,29 +204,43 @@ void update_overrelax(){
     return;
 }
 
-void Scalar_2D(FILE * mis, int Nx, int Nt, float mass){
+void Scalar_2D(FILE* mis,int Nt, int Nx, float mass){
     
-    FILE *input;
-    
-    int x;
-    int iter;
     nx=Nx;
     nt=Nt;
+
+    FILE *input;
+    int x;
+    int iter=0;
+    
+
 //  apertura file da dove leggere i parametri della simulazione
     input = fopen("/home/dario/Documents/UNI/Metodi/Modulo3/Scalar2D/input.txt","r");
+
     control_file(input);
     
-    x= fscanf(input, "%d  %d  %d  %f", &i_flag, &measures, &i_decorrel, &extfield);
-    //  apertura file sul quale scrivere le misure della magnetizzazione
+    x= fscanf(input, "%d  %d  %d  %f", &i_flag, &measures, &i_decorrel, &extfield/*, &i_term*/);
     
-    mass2   = mass*mass;
-    mass2p4 = mass*mass + 4.0;
+    mass2   = pow(mass,2);
+    mass2p4 = pow(mass,2) + 4;
     
     
     geometry();
-    initialize_lattice(i_flag);
     
-    for(int iter = 0; iter<measures; iter++){
+/*
+    initialize_lattice(i_flag);
+
+    for(int term=0; term<i_term; term++){
+        update_heatbath();
+        update_overrelax();
+        update_overrelax();
+        update_overrelax();
+        update_overrelax();
+
+    }
+
+*/
+    for(iter = 0; iter<measures; iter++){
         
         // AGGIORNAMENTO CONFIGURAZIONE: i_decorrel spazzate di tutto il reticolo
         for(int j = 0; j<i_decorrel; j++){
@@ -228,15 +250,16 @@ void Scalar_2D(FILE * mis, int Nx, int Nt, float mass){
             update_overrelax();
             update_overrelax();
             update_overrelax();
+            
         }
         
         
         //   MISURA DELLE OSSERVABILI FISICHE
+        energy();  // xene mass
 
-        energy();
         
-        fprintf(mis,"%d   %lf    %lf   %lf   %lf\n", iter, xene_mass, xene_spat, xene_temp, xene_density); //prendo misure a questa configurazione
+        fprintf(mis,"%d   %lf    %lf   %lf  %lf \n", iter, xene_mass, xene_spat, xene_temp, xene_density); //prendo misure a questa configurazione
+        //printf("%d   %lf    %lf   %lf  %lf \n", iter, xene_mass, xene_spat, xene_temp, xene_density);
     }
-        
     return;
 }
