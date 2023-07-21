@@ -19,7 +19,8 @@ dati_dir = root_dir + label + "/Bootstrap/"
 n_file = root_dir + label+ f"/anomalia.txt"
 z, dz, y, dy, x = np.loadtxt(n_file, unpack=True)
 
-
+nfile = root_dir + label + f"/energy_density.txt"
+x1, y1, dy1, tsum, edenssut2, dedenssut2 = np.loadtxt(nfile,unpack=True)
 
 ######################################################################################
 ##########################  CALCOLO DELL'INTEGRALE ###########################
@@ -127,7 +128,7 @@ labely = r'$\frac{ene_mass}{T^2}$'
 
 plt.figure(2)
 
-title = r'Energy Density (confronto con anomalia)'
+title = r'Energy Density (confronto con metodo anomalia)'
 labelx = r'$\frac{1}{Nt*m}$'
 labely = r'$\frac{ene_mass}{T^2}$'
 
