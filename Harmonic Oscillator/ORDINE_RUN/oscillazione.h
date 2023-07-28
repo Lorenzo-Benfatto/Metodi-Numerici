@@ -7,13 +7,13 @@
 #include"/home/dario/Documents/UNI/Metodi/listfunction.h"
 /* Programma per la simulazione dell'oscillatore armonico*/
 
-#define Nmax 10000000
+#define Nmax 100000
 int Nlatt;
-long int seed = 23456789;
-float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta) 
+long int seed = 43456789;//33456789;
+float d_metro; //eta=a*omega = parametro reticolo * pulsazione;  d_metro = parametro del metropolis = 2*sqrt(eta)
 int iflag, measures, i_decorrel, i_term;  //vedi ising. i_term = passo di termalizzazione
 int npp[Nmax], nmm[Nmax]; //array per definire le posizioni dei primi vicini del lattice
-float field[Nmax];  //array in cui salviamo le Nlatt posizioni del percorso 
+float field[Nmax];  //array in cui salviamo le Nlatt posizioni del percorso
 unsigned long acc=0;  //intero che mi calcola quante volte ho accettato il metropolis, per poi calcolare l'accettanza
 
 
@@ -41,7 +41,7 @@ void geometry(){
 void initialize_lattice(int iflag){
     float x;
     
-    // PARTENZA A FREDDO (tutti gli spin a 1, o -1, come se fosse T = 0) 
+    // PARTENZA A FREDDO (tutti gli spin a 1, o -1, come se fosse T = 0)
     if(iflag == 0){
         for(int i = 0; i<Nlatt; i++){
                 
@@ -49,7 +49,7 @@ void initialize_lattice(int iflag){
             
         }
     }
-    // PARTENZA A CALDO (spin random, come se fosse T = infinito) 
+    // PARTENZA A CALDO (spin random, come se fosse T = infinito)
     if(iflag == 1){
         for(int i = 0; i<Nlatt-1; i++){
             //float x;
@@ -80,8 +80,8 @@ void update_metropolis(float eta){
     c1 = 1/eta;
     c2 = 1/eta + eta/2;
 
-    /*loop su tutti i siti, qui il sito non è scelto a caso ma faccio una spazzata 
-    iterativa su tutti i siti, si può dimostrare che va bene lo stesso per il bilancio dettagliato, 
+    /*loop su tutti i siti, qui il sito non è scelto a caso ma faccio una spazzata
+    iterativa su tutti i siti, si può dimostrare che va bene lo stesso per il bilancio dettagliato,
     ma meno banale da provare*/
     
     for(int i = 0; i<Nlatt; i++){
@@ -94,7 +94,7 @@ void update_metropolis(float eta){
         p_rat= c1 * phi_prova * force - c2*pow(phi_prova,2);
         p_rat= p_rat - c1*phi*force + c2*pow(phi,2);
         //printf("%f\n", p_rat);
-        x = log(ran2(&seed));  //METRO-TEST! 
+        x = log(ran2(&seed));  //METRO-TEST!
         
         if(x<p_rat){
           field[i]=phi_prova;  //test accettanza, se p_rat>1 accetto
@@ -109,7 +109,9 @@ void update_metropolis(float eta){
 //funzione che prende le misure delle osservabili che ci interessano
 
 double * measure(double obs[3]){
-
+    obs[0]=0;
+    obs[1]=0;
+    obs[2]=0;
     for(int i=0; i<Nlatt; i++){
         obs[0]=obs[0] + pow(field[i],2);
         obs[1] = obs[1] + pow(field[i]-field[npp[i]],2);
@@ -157,23 +159,29 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
         Nlatt=y;
         eta=primovalore/Nlatt;
         if(eta<0.01) d_metro=0.15;
-        else if(eta<0.05 && eta>=0.01) d_metro=0.3;
+        else if (eta<0.03 && eta>=0.01) d_metro=0.25;
+        else if (eta<0.05 && eta>=0.03) d_metro=0.3;
         else if(eta<0.09 && eta>=0.05) d_metro=0.5;
         else if(eta>=0.09 && eta<0.15) d_metro=0.8;
         else if(eta>=0.15 && eta<0.45) d_metro=1;
-        else if(eta>=0.45) d_metro=3;
+        else if(eta>=0.45) d_metro=1.5;
+        //d_metro=eta*20;
         Nlatt=(int)Nlatt;
         
     }
+
+// DALLE VARIE PROVE TROVO UN'ACCETTENZA INTORNO AL 37% SE DELTA = 0.3 PER NLATT = 300,500,700. POTREI PROVARE A VEDERE SE MIGLIORA, METTENDO 0.25 ANCHE PER QUESTI CASI. MENTRE PER NLATT = 200 E DELTA = 0.25 HO 43% E PER NLATT = 100, 500, 700, 1000 E DELTA = 0.3 HO 37%
     else {
         Nlatt=y;
         eta=primovalore;
-        if(eta<0.01) d_metro=0.15;
-        else if(eta<0.05 && eta>=0.01) d_metro=0.3;
+        if (eta<=0.005) d_metro=0.08;
+        else if(eta<=0.01 && eta>0.005) d_metro=0.15;
+        else if (eta<0.03 && eta>0.01) d_metro=0.25;
+        else if (eta<0.05 && eta>=0.03) d_metro=0.3;
         else if(eta<0.09 && eta>=0.05) d_metro=0.5;
         else if(eta>=0.09 && eta<0.15) d_metro=0.8;
         else if(eta>=0.15 && eta<0.45) d_metro=1;
-        else if(eta>=0.45) d_metro=3;
+        else if(eta>=0.45) d_metro=1.5;
     }
 
     initialize_lattice(iflag);
@@ -181,41 +189,36 @@ void Harmonic_metropolis(float y, FILE *misure, int scelta, float primovalore){
     //printf("8\n");
     //SESSIONE ALL'EQUILIBRIO con MISURE
 
+    printf("%f",eta);
     for (int i = 1; i<i_term+1; i++){
         update_metropolis(eta);
     }
 
     acc=0;
     double obs[3]={0,0,0};
+    double *results;
     for (int iter=0; iter<measures; iter++){
         // AGGIORNAMENTO CONFIGURAZIONE
         for(int idec=0; idec<i_decorrel; idec++ ){
             update_metropolis(eta);
-            //printf("si %d\n", idec);
-//////////////////////////////////////////////////////////////////////////////////////////////
-            //Da scommentare nel caso si voglia stampare il path ad ogni update_metropolis
-
-            /*for (int i = 0; i < Nlatt; i++){  //stampo su file il field ma non so a cosa serva e cosa si debba vedere
-                fprintf(lat, "%f  ", field[i]);}
-            
-            fprintf(lat, "\n");*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////
             }
-        obs[0] = measure(obs)[0];
-        obs[1] = measure(obs)[1];
-        obs[2] = measure(obs)[2];
+        results=measure(obs);
         //printf("%lf  %lf  %d\n", obs[0], obs[1], iter);
-        fprintf(misure,"%lf %lf %lf %d\n", obs[0], obs[1], obs[2], iter); //prendo misure a questa configurazione
+        fprintf(misure,"%lf  %lf %lf  %d\n", results[0], results[1], results[2], iter); //prendo misure a questa configurazione
     }
 
-    float accettanza;
-    unsigned long num_updates;
-    num_updates=measures*i_decorrel*(Nlatt-2);
-    accettanza=(float)acc*100/num_updates;
+    float accettanza = 0;
+    unsigned long long num_updates = 0;
+    num_updates=i_decorrel*(Nlatt);//(Nlatt-2);
+    num_updates = measures*num_updates;
+    accettanza=(float)acc*100/measures;
+    accettanza=(float)accettanza/i_decorrel;
+    accettanza=(float)accettanza/Nlatt;
 
     printf("\n \n");
 
-    printf("delta=%f, eta=%f, Nlatt=%d, accettanza=%.2f percento,\n numero di update = %lu, numero di accettati %lu\n", d_metro, eta, Nlatt, accettanza, num_updates, acc);
+    printf("delta=%f, eta=%f, Nlatt=%d, accettanza=%.2f percento,\n numero di update = %llu, numero di accettati %lu\n", d_metro, eta, Nlatt, accettanza, num_updates, acc);
+    printf("misure: %d, idec: %d, Nlatt: %d \n", measures, i_decorrel, Nlatt);
     //fclose(lat);
     fclose(input);
     return;
